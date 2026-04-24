@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* scrollbar */
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+* { -webkit-tap-highlight-color: transparent; }
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

@@ -1,0 +1,29 @@
+{
+  "file_hashes": {
+    ".claude/hooks/vexp-guard.sh": "1c4253ea6a0cc7ef65e952a67146b91a7d8b0a42f027e279d1a9f6c579e14614",
+    "src/App.tsx": "9bd8d2eb4643a017854afb2506c5eb840d7a89ffbb7967db8852e6bea5f8d94c",
+    "src/components/AddServicePanel.tsx": "599523076fd624ba9f55c69e13a5e59287adc274e3fb3ea04879802298998d4c",
+    "src/components/Board.tsx": "d95c33de738b970120a38d5c58a19344f6e0358bb253357421762fe21b4d0b55",
+    "src/components/ManageServices.tsx": "463a9dd51be764f454d8668ff870c6bc526399c7eb6a7ff23b8dfde7512cc6fc",
+    "src/components/SearchSpotlight.tsx": "72b641ba798a0a07da8d2219d65da387f56c4d54345f2bb902950c2ee818d9a5",
+    "src/components/ServiceDirectory.tsx": "ad1377f6707e3f4620a702d43ce99420a4fdae638afacd2dea5eccec7bd8109a",
+    "src/components/ServiceIcon.tsx": "100ef532610d1fbf24564aaa0d57e1df671d4c5ed51fe1a698567304be1ffe12",
+    "src/components/ServiceRow.tsx": "1aa9cb6d6ddf8af998c2f881552c03b9245b8c560c73a7f6b79ee228800607b1",
+    "src/components/Widget.tsx": "14532799dacc0f79d964d1c44c7915a56b743967379e63149b062b2697f5f461",
+    "src/data/icons.ts": "bb1bc277be7de50383ad87a24b5f9ca235b11d7f1ee855014fe454ce1707c6cb",
+    "src/data/services.ts": "d70997b0b0284ee4b783ca2f998d7d1a3d1d10018f5e8c96de1371c88a994c73",
+    "src/hooks/usePortalData.ts": "f74c016ddb661a741bec34c860b83a6b1cadf8ec5b1c898e4e21fdc65f7c7403",
+    "src/main.tsx": "38100bf00999ea8c9eaa2ce533026142a182c44bb01c0cf65215f9bf3a9a0f4b",
+    "src/types/index.ts": "c51fbf30e27b9c024ead5f1a4b1a8769bb08ce1701c94c54c922a8246b9ebe03",
+    "vite.config.ts": "535c6de8e08020215422c2690dd69d15893d05ce0c7ff8dfb2704167412048f0"
+  },
+  "indexed_at_commit": "684c3f1038dc1c3883252338d802cf7b869d52dd",
+  "indexed_at_timestamp": "2026-04-24T20:51:32.935183+00:00",
+  "schema_version": 3,
+  "stats": {
+    "total_edges": 36,
+    "total_files": 16,
+    "total_nodes": 26
+  },
+  "vexp_version": "2.0.12"
+}
