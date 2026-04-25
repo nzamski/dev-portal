@@ -21,7 +21,7 @@ export class ServicesController {
   }
 
   @Post()
-  create(@Body() body: Service) {
+  create(@Body() body: Omit<Service, 'id'>) {
     return this.services.create(body);
   }
 

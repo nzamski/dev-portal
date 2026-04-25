@@ -1,35 +1,30 @@
 import { useState, useEffect } from 'react';
 import type { ComponentType } from 'react';
 import type { SimpleIcon } from 'simple-icons';
-import { lookupIcon, isReactIconsName, getReactIconsPackage } from '../data/icons';
+import { lookupIcon, isMdIcon, resolveIconColor } from '../lib/icons';
+
+const SHADED_COLOR = 'rgba(255,255,255,0.35)';
 
 interface Props {
-  serviceId: string;
   serviceName?: string;
   iconName?: string;
   size?: number;
-  color?: string;
+  shaded?: boolean;
   className?: string;
 }
 
-type ReactIconComponent = ComponentType<{ size?: number; color?: string; className?: string }>;
+type MdIconComponent = ComponentType<{ size?: number; color?: string; className?: string }>;
 
-function useReactIcon(iconName: string | undefined): ReactIconComponent | null {
-  const [Icon, setIcon] = useState<ReactIconComponent | null>(null);
+function useMdIcon(iconName: string | undefined): MdIconComponent | null {
+  const [Icon, setIcon] = useState<MdIconComponent | null>(null);
 
   useEffect(() => {
-    if (!isReactIconsName(iconName)) {
+    if (!isMdIcon(iconName)) {
       setIcon(null);
       return;
     }
-    const pkg = getReactIconsPackage(iconName!);
-    if (!pkg) {
-      setIcon(null);
-      return;
-    }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore — dynamic sub-package import; Vite bundles each package as a separate chunk
-    import(/* @vite-ignore */ `react-icons/${pkg}`).then((mod: Record<string, ReactIconComponent>) => {
+    // @ts-ignore — dynamic import; Vite bundles react-icons/md as a separate chunk
+    import('react-icons/md').then((mod: Record<string, MdIconComponent>) => {
       const Comp = mod[iconName!];
       setIcon(Comp ? () => Comp : null);
     }).catch(() => setIcon(null));
@@ -38,19 +33,17 @@ function useReactIcon(iconName: string | undefined): ReactIconComponent | null {
   return Icon;
 }
 
-export function ServiceIcon({ serviceId, serviceName, iconName, size = 22, color, className = '' }: Props) {
-  const ReactIcon = useReactIcon(iconName);
+export function ServiceIcon({ serviceName, iconName, size = 22, shaded = false, className = '' }: Props) {
+  const MdIcon = useMdIcon(iconName);
 
-  const simpleIcon: SimpleIcon | null = iconName && !isReactIconsName(iconName)
+  const simpleIcon: SimpleIcon | null = !isMdIcon(iconName) && iconName
     ? lookupIcon(iconName)
-    : (!iconName ? lookupIcon(serviceId) ?? (serviceName ? lookupIcon(serviceName) : null) : null);
+    : null;
 
-  const resolvedColor = color ?? (simpleIcon
-    ? parseInt(simpleIcon.hex, 16) < 0x333333 ? '#e0e0e0' : `#${simpleIcon.hex}`
-    : 'rgba(255,255,255,0.4)');
+  const resolvedColor = shaded ? SHADED_COLOR : resolveIconColor(iconName);
 
-  if (ReactIcon) {
-    return <ReactIcon size={size} color={color ?? 'rgba(255,255,255,0.6)'} className={className} />;
+  if (MdIcon) {
+    return <MdIcon size={size} color={resolvedColor} className={className} />;
   }
 
   if (simpleIcon) {
@@ -68,13 +61,13 @@ export function ServiceIcon({ serviceId, serviceName, iconName, size = 22, color
     );
   }
 
-  const label = serviceName ?? serviceId;
+  const label = serviceName ?? '';
   return (
     <span
       className={className}
       style={{
         fontSize: size * 0.45,
-        color: color ?? 'rgba(255,255,255,0.4)',
+        color: resolvedColor,
         fontWeight: 700,
         letterSpacing: '-0.03em',
         lineHeight: 1,

@@ -16,8 +16,8 @@ export class ServicesService {
     return this.repo.find({ order: { name: 'ASC' } });
   }
 
-  create(service: ServiceEntity): Promise<ServiceEntity> {
-    return this.repo.save(service);
+  create(service: Omit<ServiceEntity, 'id'>): Promise<ServiceEntity> {
+    return this.repo.save(this.repo.create(service));
   }
 
   async update(id: string, data: Omit<ServiceEntity, 'id'>): Promise<ServiceEntity | null> {

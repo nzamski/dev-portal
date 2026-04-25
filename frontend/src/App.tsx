@@ -6,7 +6,7 @@ import { ManageServices } from './components/ManageServices';
 import { usePortalData } from './hooks/usePortalData';
 
 export default function App() {
-  const { services, setServices, portalTitle, setPortalTitle, boardItems, setBoardItems, flushChanges, loading } = usePortalData();
+  const { services, setServices, addService, portalTitle, setPortalTitle, boardItems, setBoardItems, flushChanges, loading } = usePortalData();
   const [editMode, setEditMode] = useState(false);
   const [search, setSearch] = useState('');
   const [editingTitle, setEditingTitle] = useState(false);
@@ -131,7 +131,7 @@ export default function App() {
 
       {/* ── Manage / Directory ──────────────────────────────── */}
       {editMode ? (
-        <ManageServices services={services} setServices={setServices} />
+        <ManageServices services={services} setServices={setServices} addService={addService} />
       ) : (
         <div className="max-w-5xl mx-auto px-8">
           <ServiceDirectory services={services} />

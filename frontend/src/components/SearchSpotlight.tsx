@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ServiceIcon } from './ServiceIcon';
-import { resolveIconColor } from '../data/icons';
 import type { Service } from '../types';
 
 interface Props {
@@ -11,10 +10,12 @@ interface Props {
 
 export function SearchSpotlight({ query, services, onClose }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
-  const q = query.toLowerCase();
-  const results = services.filter(
-    (s) => s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)
-  );
+  const results = useMemo(() => {
+    const q = query.toLowerCase();
+    return services.filter(
+      (s) => s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)
+    );
+  }, [query, services]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -57,7 +58,7 @@ export function SearchSpotlight({ query, services, onClose }: Props) {
 
                 const iconEl = (
                   <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0 group-hover:border-white/10 transition-colors">
-                    <ServiceIcon serviceId={s.id} serviceName={s.name} size={18} color={resolveIconColor(s.id, s.name)} />
+                    <ServiceIcon serviceName={s.name} iconName={s.iconName} size={18}  />
                   </div>
                 );
 
@@ -86,32 +87,42 @@ export function SearchSpotlight({ query, services, onClose }: Props) {
                 }
 
                 return (
-                  <div key={s.id} className={divider}>
-                    <button
-                      onClick={() => setOpenId(isOpen ? null : s.id)}
-                      className={`${rowBase} w-full text-left`}
-                    >
-                      {iconEl}
-                      {metaEl}
-                      <span className={`text-white/25 text-xs transition-transform duration-150 group-hover:text-white/50 ${isOpen ? 'rotate-180' : ''}`}>▾</span>
-                    </button>
-                    {isOpen && (
-                      <div className="pb-1.5">
-                        {s.links.map((link) => (
-                          <a
-                            key={link.url}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={onClose}
-                            className="flex items-center gap-2 mx-3 pl-11 pr-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors group/link"
-                          >
-                            <span className="text-white/45 text-sm group-hover/link:text-white/75 transition-colors">{link.label}</span>
-                            <span className="text-white/15 group-hover/link:text-white/40 text-sm transition-colors ml-auto">↗</span>
-                          </a>
-                        ))}
+                  <div
+                    key={s.id}
+                    className={divider}
+                    onMouseEnter={() => setOpenId(s.id)}
+                    onMouseLeave={() => setOpenId(null)}
+                  >
+                    <div className={`flex items-center gap-3 px-4 py-3 transition-colors cursor-default group ${isOpen ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
+                      <div className={`w-8 h-8 rounded-lg bg-white/[0.04] border flex items-center justify-center shrink-0 transition-colors ${isOpen ? 'border-white/10' : 'border-white/[0.06]'}`}>
+                        <ServiceIcon serviceName={s.name} iconName={s.iconName} size={18}  />
                       </div>
-                    )}
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm transition-colors ${isOpen ? 'text-white/90' : 'text-white/70'}`}>{s.name}</span>
+                        <span className="text-white/25 text-xs ml-2">{s.description}</span>
+                      </div>
+                      <span className={`text-xs transition-colors ${isOpen ? 'text-white/40' : 'text-white/15'}`}>
+                        {s.links.length} links ▾
+                      </span>
+                    </div>
+                    <div
+                      className="overflow-hidden transition-all duration-200"
+                      style={{ maxHeight: isOpen ? `${s.links.length * 40}px` : '0px' }}
+                    >
+                      {s.links.map((link) => (
+                        <a
+                          key={link.url}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={onClose}
+                          className="flex items-center gap-2 mx-3 pl-11 pr-3 py-2.5 hover:bg-white/[0.05] transition-colors group/link border-t border-white/[0.03]"
+                        >
+                          <span className="text-white/40 text-sm group-hover/link:text-white/75 transition-colors flex-1">{link.label}</span>
+                          <span className="text-white/15 group-hover/link:text-white/40 text-sm transition-colors">↗</span>
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 );
               })

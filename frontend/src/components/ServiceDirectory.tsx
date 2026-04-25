@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { ServiceRow } from './ServiceRow';
 import type { Service } from '../types';
 
@@ -5,7 +6,7 @@ interface Props {
   services: Service[];
 }
 
-export function ServiceDirectory({ services }: Props) {
+const ServiceDirectory = memo(function ServiceDirectory({ services }: Props) {
   const sorted = [...services].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
@@ -29,4 +30,6 @@ export function ServiceDirectory({ services }: Props) {
       </div>
     </section>
   );
-}
+});
+
+export { ServiceDirectory };

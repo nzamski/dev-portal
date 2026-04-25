@@ -2,7 +2,6 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useState } from 'react';
 import { ServiceIcon } from './ServiceIcon';
-import { resolveIconColor } from '../data/icons';
 import type { Service } from '../types';
 
 interface Props {
@@ -21,7 +20,6 @@ export function Widget({ service, editMode, onRemove }: Props) {
   });
 
   const style = { transform: CSS.Transform.toString(transform), transition };
-  const brandColor = resolveIconColor(service.id, service.name, service.iconName);
 
   return (
     // Outer div: dnd anchor + mouse-leave scope (covers tile + floating panel)
@@ -63,11 +61,10 @@ export function Widget({ service, editMode, onRemove }: Props) {
         )}
 
         <ServiceIcon
-          serviceId={service.id}
           serviceName={service.name}
           iconName={service.iconName}
           size={38}
-          color={hovered && !editMode ? brandColor : 'rgba(255,255,255,0.38)'}
+          shaded={!hovered || editMode}
         />
 
         <span className={[

@@ -1,13 +1,21 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { ServiceIcon } from './ServiceIcon';
-import { resolveIconColor } from '../data/icons';
+import { isMdIcon } from '../lib/icons';
 import type { Service, ServiceLink } from '../types';
+
+type IconSource = 'initials' | 'si' | 'md';
+
+function deriveIconSource(iconName: string | undefined): IconSource {
+  if (!iconName?.trim()) return 'initials';
+  if (isMdIcon(iconName)) return 'md';
+  return 'si';
+}
 
 const INPUT_CLS = 'w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white placeholder-white/20 outline-none focus:border-white/15 transition-colors';
 
 interface ModalProps {
   service?: Service;
-  onSave: (s: Service) => void;
+  onSave: (s: Omit<Service, 'id'>) => void;
   onClose: () => void;
 }
 
@@ -20,6 +28,7 @@ function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
   const [links, setLinks] = useState<ServiceLink[]>(
     service?.links?.length ? service.links : [{ label: '', url: '' }]
   );
+  const [iconSource, setIconSource] = useState<IconSource>(() => deriveIconSource(service?.iconName));
 
   const isMulti = links.length > 1;
   const valid =
@@ -37,10 +46,8 @@ function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
 
   const handleSave = () => {
     if (!valid) return;
-    const id = service?.id ?? crypto.randomUUID();
     const cleanLinks = links.filter((l) => l.url.trim());
     onSave({
-      id,
       name: form.name,
       description: form.description,
       iconName: form.iconName.trim() || undefined,
@@ -48,8 +55,18 @@ function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
     });
   };
 
+  const handleIconSourceChange = (source: IconSource) => {
+    setIconSource(source);
+    setForm(f => ({ ...f, iconName: '' }));
+  };
+
+  const handleMdInput = (raw: string) => {
+    if (!raw) { setForm(f => ({ ...f, iconName: '' })); return; }
+    const stripped = raw.startsWith('Md') && raw.length > 2 ? raw.slice(2) : raw;
+    setForm(f => ({ ...f, iconName: 'Md' + stripped.charAt(0).toUpperCase() + stripped.slice(1) }));
+  };
+
   const previewIconName = form.iconName.trim() || undefined;
-  const previewId = service?.id ?? '__preview__';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md" onClick={onClose}>
@@ -78,27 +95,51 @@ function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
             onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
 
-          {/* Icon field with live preview */}
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
-              <ServiceIcon
-                serviceId={previewId}
-                serviceName={form.name || undefined}
-                iconName={previewIconName}
-                size={16}
-                color={resolveIconColor(previewId, form.name || undefined, previewIconName)}
-              />
+          {/* Icon picker */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
+                <ServiceIcon serviceName={form.name || undefined} iconName={previewIconName} size={16} />
+              </div>
+              <div className="flex rounded-lg border border-white/[0.08] overflow-hidden text-[11px] font-medium">
+                {(['initials', 'si', 'md'] as IconSource[]).map((src) => {
+                  const label = src === 'initials' ? 'Initials' : src === 'si' ? 'Simple Icons' : 'Material Design';
+                  return (
+                    <button
+                      key={src}
+                      type="button"
+                      onClick={() => handleIconSourceChange(src)}
+                      className={`px-2.5 py-1.5 transition-colors ${iconSource === src ? 'bg-white/[0.12] text-white/80' : 'text-white/30 hover:text-white/50 hover:bg-white/[0.05]'}`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <input
-              className={INPUT_CLS}
-              placeholder="Icon (e.g. github, MdOutlineSupport)"
-              value={form.iconName}
-              onChange={(e) => setForm({ ...form, iconName: e.target.value })}
-            />
+            {iconSource === 'si' && (
+              <div>
+                <input
+                  className={INPUT_CLS}
+                  placeholder="Slug — e.g. github, grafana, kubernetes"
+                  value={form.iconName}
+                  onChange={(e) => setForm({ ...form, iconName: e.target.value })}
+                />
+                <p className="text-white/20 text-[11px] mt-1 pl-1">Find slugs at simpleicons.org</p>
+              </div>
+            )}
+            {iconSource === 'md' && (
+              <div>
+                <input
+                  className={INPUT_CLS}
+                  placeholder="Name — e.g. Cloud, Storage, Settings"
+                  value={isMdIcon(form.iconName) ? form.iconName.slice(2) : form.iconName}
+                  onChange={(e) => handleMdInput(e.target.value)}
+                />
+                <p className="text-white/20 text-[11px] mt-1 pl-1">Browse at react-icons.github.io/react-icons/md</p>
+              </div>
+            )}
           </div>
-          <p className="text-white/20 text-[11px] -mt-1 pl-1">
-            Simple Icons slug or any react-icons name (MdXxx, FaXxx, BiXxx…)
-          </p>
 
           {/* URLs */}
           <div className="mt-1">
@@ -167,25 +208,28 @@ function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
 interface Props {
   services: Service[];
   setServices: (services: Service[]) => void;
+  addService: (data: Omit<Service, 'id'>) => Promise<Service>;
 }
 
-export function ManageServices({ services, setServices }: Props) {
+const ManageServices = memo(function ManageServices({ services, setServices, addService }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
 
   const handleDelete = (id: string) => setServices(services.filter((s) => s.id !== id));
 
-  const handleSave = (updated: Service) => {
+  const handleSave = async (data: Omit<Service, 'id'>) => {
     if (editingId) {
-      setServices(services.map((s) => (s.id === editingId ? updated : s)));
+      setServices(services.map((s) => (s.id === editingId ? { ...data, id: editingId } : s)));
       setEditingId(null);
     } else {
-      setServices([...services, updated]);
+      await addService(data);
       setShowAdd(false);
     }
   };
 
   const closeModal = () => { setEditingId(null); setShowAdd(false); };
+
+  const sorted = [...services].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="max-w-5xl mx-auto px-8 pb-24">
@@ -203,18 +247,16 @@ export function ManageServices({ services, setServices }: Props) {
       </div>
 
       <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
-        {services.map((s, i) => (
+        {sorted.map((s, i) => (
           <div
             key={s.id}
             className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? 'border-t border-white/[0.04]' : ''}`}
           >
             <div className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
               <ServiceIcon
-                serviceId={s.id}
                 serviceName={s.name}
                 iconName={s.iconName}
                 size={15}
-                color={resolveIconColor(s.id, s.name, s.iconName)}
               />
             </div>
             <div className="flex-1 min-w-0">
@@ -255,4 +297,6 @@ export function ManageServices({ services, setServices }: Props) {
       )}
     </div>
   );
-}
+});
+
+export { ManageServices };

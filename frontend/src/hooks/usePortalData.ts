@@ -36,6 +36,14 @@ export function usePortalData() {
     setPortalTitleState(title);
   }, []);
 
+  const addService = useCallback(async (data: Omit<Service, 'id'>): Promise<Service> => {
+    const { data: created } = await apiClient.post<Service>('/api/services', data);
+    const updated = [...servicesRef.current, created];
+    servicesRef.current = updated;
+    setServicesState(updated);
+    return created;
+  }, []);
+
   const setServices = useCallback((updated: Service[]) => {
     const current = servicesRef.current;
     servicesRef.current = updated;
@@ -67,6 +75,7 @@ export function usePortalData() {
   return {
     services,
     setServices,
+    addService,
     portalTitle,
     setPortalTitle,
     boardItems,
