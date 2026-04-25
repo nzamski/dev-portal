@@ -1,181 +1,75 @@
+import { useState } from 'react';
 import { MRCard } from './MRCard';
-import type { GitLabMR, GitLabUser, MRColumnId, MRColumns } from './types';
+import type { GitLabMR, GitLabUser, MRColumns } from './types';
 
-export interface ColumnDef {
-  id: MRColumnId;
-  label: string;
-  description: string;
-  emptyTitle: string;
-  emptyBody: string;
-  accentClass: string;
+// ── Data transform ────────────────────────────────────────────────────────────
+
+interface MemberLoad {
+  member: GitLabUser;
+  authoring: GitLabMR[];
+  reviewing: GitLabMR[];
+  totalLoad: number;
 }
 
-export const COLUMNS: ColumnDef[] = [
-  {
-    id: 'unassigned',
-    label: 'Unassigned',
-    description: 'No reviewer & no assignee',
-    emptyTitle: 'All covered',
-    emptyBody: 'Every open MR has a reviewer or an assignee.',
-    accentClass: 'text-white/30',
-  },
-  {
-    id: 'author_action',
-    label: 'Author action',
-    description: 'Changes requested',
-    emptyTitle: 'No action needed',
-    emptyBody: 'No reviewers are requesting changes right now.',
-    accentClass: 'text-amber-400/60',
-  },
-  {
-    id: 'reviewer_action',
-    label: 'Reviewer action',
-    description: 'Waiting for review',
-    emptyTitle: 'Inbox zero',
-    emptyBody: 'Nothing is waiting for a reviewer to act.',
-    accentClass: 'text-sky-400/60',
-  },
-  {
-    id: 'approved',
-    label: 'Approved',
-    description: 'Ready to merge',
-    emptyTitle: 'Nothing approved',
-    emptyBody: 'No MRs are approved and waiting to merge.',
-    accentClass: 'text-emerald-400/60',
-  },
-];
-
-export function MRColumnsBoard({
-  columns,
-  showRepo,
-}: {
-  columns: Record<MRColumnId, GitLabMR[]>;
-  showRepo: boolean;
-}) {
-  return (
-    <div className="grid grid-cols-4 gap-4">
-      {COLUMNS.map((col) => (
-        <MRColumn key={col.id} def={col} mrs={columns[col.id]} showRepo={showRepo} />
-      ))}
-    </div>
-  );
-}
-
-// ── Swimlane view ─────────────────────────────────────────────────────────
-
-interface SwimlaneRow {
-  member: GitLabUser | null;
-  columns: MRColumns;
-  totalCount: number;
-}
-
-function buildSwimlanes(columns: MRColumns): SwimlaneRow[] {
-  const memberMap = new Map<number, { user: GitLabUser; cols: MRColumns }>();
+function buildMemberLoad(columns: MRColumns): {
+  members: MemberLoad[];
+  unassigned: GitLabMR[];
+} {
+  const memberMap = new Map<number, { user: GitLabUser; authoring: GitLabMR[]; reviewing: GitLabMR[] }>();
 
   function ensureMember(user: GitLabUser) {
     if (!memberMap.has(user.id)) {
-      memberMap.set(user.id, {
-        user,
-        cols: { unassigned: [], author_action: [], reviewer_action: [], approved: [] },
-      });
+      memberMap.set(user.id, { user, authoring: [], reviewing: [] });
     }
     return memberMap.get(user.id)!;
   }
 
-  for (const mr of columns.author_action) {
-    if (mr.reviewers.length === 0 && mr.assignees.length > 0) {
-      // No reviewer yet — route to each assignee's row so they know to find one
-      for (const assignee of mr.assignees) ensureMember(assignee).cols.author_action.push(mr);
+  // Authoring: all open MRs across every status column
+  const allMRs = [
+    ...columns.author_action,
+    ...columns.reviewer_action,
+    ...columns.approved,
+    ...columns.unassigned,
+  ];
+
+  for (const mr of allMRs) {
+    if (mr.assignees.length > 0) {
+      for (const assignee of mr.assignees) ensureMember(assignee).authoring.push(mr);
     } else {
-      ensureMember(mr.author).cols.author_action.push(mr);
+      ensureMember(mr.author).authoring.push(mr);
     }
   }
 
+  // Reviewing: pending reviewers on MRs waiting for review
   for (const mr of columns.reviewer_action) {
     const pending = mr.reviewers.filter((r) => r.state === 'unreviewed' || r.state === 'reviewed');
     const targets = pending.length > 0 ? pending : mr.reviewers;
-    for (const r of targets) ensureMember(r).cols.reviewer_action.push(mr);
+    for (const r of targets) ensureMember(r).reviewing.push(mr);
   }
 
-  for (const mr of columns.approved) {
-    ensureMember(mr.author).cols.approved.push(mr);
-  }
-
-  const rows: SwimlaneRow[] = [...memberMap.values()]
-    .map(({ user, cols }) => ({
+  const members: MemberLoad[] = [...memberMap.values()]
+    .map(({ user, authoring, reviewing }) => ({
       member: user,
-      columns: cols,
-      totalCount: Object.values(cols).reduce((s, c) => s + c.length, 0),
+      authoring,
+      reviewing,
+      totalLoad: authoring.length + reviewing.length,
     }))
-    .sort((a, b) => b.totalCount - a.totalCount);
+    .sort((a, b) => b.totalLoad - a.totalLoad);
 
-  if (columns.unassigned.length > 0) {
-    rows.unshift({
-      member: null,
-      columns: { unassigned: columns.unassigned, author_action: [], reviewer_action: [], approved: [] },
-      totalCount: columns.unassigned.length,
-    });
-  }
-
-  return rows;
+  return { members, unassigned: columns.unassigned };
 }
 
-function MemberLabel({ member, totalCount }: { member: GitLabUser | null; totalCount: number }) {
-  const name = member ? member.name.split(' ')[0] : 'Unassigned';
-  const initials = member
-    ? member.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .slice(0, 2)
-        .toUpperCase()
-    : '—';
+// ── Member load board ─────────────────────────────────────────────────────────
 
-  return (
-    <div className="flex items-center gap-2 w-full">
-      <div className="w-6 h-6 rounded-full bg-white/[0.07] flex items-center justify-center shrink-0 text-[9px] font-semibold text-white/35">
-        {initials}
-      </div>
-      <span className="text-[12px] font-medium text-white/45 truncate flex-1 min-w-0">{name}</span>
-      <span className="text-[10px] text-white/20 tabular-nums font-mono shrink-0">{totalCount}</span>
-    </div>
-  );
-}
-
-function SwimlaneRowComponent({ row, showRepo }: { row: SwimlaneRow; showRepo: boolean }) {
-  return (
-    <div className="flex gap-4 pt-3 pb-3 border-t border-white/[0.04]">
-      <div className="w-[152px] shrink-0 flex items-start pt-0.5">
-        <MemberLabel member={row.member} totalCount={row.totalCount} />
-      </div>
-      <div className="flex-1 grid grid-cols-4 gap-4 min-w-0">
-        {COLUMNS.map((col) => {
-          const mrs = row.columns[col.id];
-          return (
-            <div key={col.id} className="flex flex-col gap-2 min-w-0">
-              {mrs.length === 0 ? (
-                <div className="min-h-[36px] rounded-lg border border-dashed border-white/[0.03]" />
-              ) : (
-                mrs.map((mr) => <MRCard key={mr.id} mr={mr} showRepo={showRepo} />)
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-export function MRSwimlanesBoard({
+export function MRLoadBoard({
   columns,
   showRepo,
 }: {
   columns: MRColumns;
   showRepo: boolean;
 }) {
-  const rows = buildSwimlanes(columns);
-
   const totalCount = Object.values(columns).reduce((s, c) => s + c.length, 0);
+
   if (totalCount === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
@@ -184,47 +78,241 @@ export function MRSwimlanesBoard({
     );
   }
 
+  const { members, unassigned } = buildMemberLoad(columns);
+
+  const maxAuthoring = Math.max(1, ...members.map((m) => m.authoring.length));
+  const maxReviewing = Math.max(1, ...members.map((m) => m.reviewing.length));
+  const maxLoad = Math.max(1, ...members.map((m) => m.totalLoad));
+
   return (
     <div>
-      {/* Column header row */}
-      <div className="flex gap-4 mb-1">
-        <div className="w-[152px] shrink-0" />
-        <div className="flex-1 grid grid-cols-4 gap-4">
-          {COLUMNS.map((col) => (
-            <div key={col.id} className="px-0.5">
-              <span className={`text-[11px] font-semibold uppercase tracking-widest ${col.accentClass}`}>
-                {col.label}
-              </span>
-              <span className="text-white/15 text-[11px] ml-2">{col.description}</span>
-            </div>
-          ))}
+      {/* Table header */}
+      <div className="flex items-center gap-4 px-3 pb-2 mb-1 border-b border-white/[0.04]">
+        <div className="w-36 shrink-0" />
+        <div className="flex-1 grid grid-cols-[1fr_1fr_80px] gap-6">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-sky-400/50">
+            Authoring
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-400/50">
+            Review queue
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-white/20">
+            Load
+          </span>
         </div>
       </div>
 
-      {/* Swimlane rows */}
-      {rows.map((row) => (
-        <SwimlaneRowComponent
-          key={row.member?.id ?? 'unassigned'}
+      {/* Member rows */}
+      {members.map((row) => (
+        <MemberLoadRow
+          key={row.member.id}
           row={row}
+          maxAuthoring={maxAuthoring}
+          maxReviewing={maxReviewing}
+          maxLoad={maxLoad}
           showRepo={showRepo}
         />
       ))}
+
+      {/* Unassigned zone */}
+      {unassigned.length > 0 && (
+        <div className="mt-6 pt-5 border-t border-white/[0.03]">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-white/20 mb-3 px-1">
+            Unassigned · {unassigned.length}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {unassigned.map((mr) => (
+              <div key={mr.id} className="w-72 shrink-0">
+                <MRCard mr={mr} showRepo={showRepo} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
+// ── Member row ────────────────────────────────────────────────────────────────
+
+function MemberLoadRow({
+  row,
+  maxAuthoring,
+  maxReviewing,
+  maxLoad,
+  showRepo,
+}: {
+  row: MemberLoad;
+  maxAuthoring: number;
+  maxReviewing: number;
+  maxLoad: number;
+  showRepo: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  const initials = row.member.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const authoringPct = (row.authoring.length / maxAuthoring) * 100;
+  const reviewingPct = (row.reviewing.length / maxReviewing) * 100;
+  const loadPct = (row.totalLoad / maxLoad) * 100;
+
+  const approvedMRs = row.authoring.filter((mr) => mr.approved);
+  const otherAuthoredMRs = row.authoring.filter((mr) => !mr.approved);
+
+  return (
+    <div className="border-t border-white/[0.03]">
+      {/* Summary row */}
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full flex items-center gap-4 px-3 py-3 hover:bg-white/[0.02] transition-colors text-left rounded-lg group"
+      >
+        {/* Name */}
+        <div className="w-36 shrink-0 flex items-center gap-2.5 min-w-0">
+          <div className="w-6 h-6 rounded-full bg-white/[0.07] flex items-center justify-center shrink-0 text-[9px] font-semibold text-white/35">
+            {initials}
+          </div>
+          <span className="text-[12px] font-medium text-white/50 truncate">
+            {row.member.name.split(' ')[0]}
+          </span>
+          <svg
+            width="8"
+            height="8"
+            viewBox="0 0 8 8"
+            fill="none"
+            className={`shrink-0 text-white/20 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          >
+            <path d="M1 2.5L4 5.5L7 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+
+        {/* Bars */}
+        <div className="flex-1 grid grid-cols-[1fr_1fr_80px] gap-6 items-center">
+          {/* Authoring */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] tabular-nums font-mono text-white/30 w-4 shrink-0 text-right">
+              {row.authoring.length}
+            </span>
+            <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-sky-400/35 rounded-full transition-all"
+                style={{ width: `${authoringPct}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Review queue */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] tabular-nums font-mono text-white/30 w-4 shrink-0 text-right">
+              {row.reviewing.length}
+            </span>
+            <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-amber-400/35 rounded-full transition-all"
+                style={{ width: `${reviewingPct}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Total load */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] tabular-nums font-mono text-white/20 w-4 shrink-0 text-right">
+              {row.totalLoad}
+            </span>
+            <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-white/10 rounded-full transition-all"
+                style={{ width: `${loadPct}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </button>
+
+      {/* Expanded detail */}
+      {expanded && (
+        <div className="grid grid-cols-2 gap-4 px-3 pb-4">
+          {/* Authoring column */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-sky-400/40 mb-2.5 px-0.5">
+              Authoring · {row.authoring.length}
+            </p>
+            <div className="flex flex-col gap-2">
+              {approvedMRs.length > 0 && (
+                <div>
+                  <p className="text-[10px] text-emerald-400/40 mb-1.5 px-0.5 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/50 inline-block" />
+                    Ready to merge · {approvedMRs.length}
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {approvedMRs.map((mr) => (
+                      <MRCard key={mr.id} mr={mr} showRepo={showRepo} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {otherAuthoredMRs.length > 0 && (
+                <div className={approvedMRs.length > 0 ? 'mt-2' : ''}>
+                  {approvedMRs.length > 0 && (
+                    <p className="text-[10px] text-white/20 mb-1.5 px-0.5">In progress · {otherAuthoredMRs.length}</p>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    {otherAuthoredMRs.map((mr) => (
+                      <MRCard key={mr.id} mr={mr} showRepo={showRepo} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {row.authoring.length === 0 && (
+                <div className="py-4 rounded-xl border border-dashed border-white/[0.04] flex items-center justify-center">
+                  <span className="text-white/15 text-[12px]">No open MRs</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Review queue column */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-400/40 mb-2.5 px-0.5">
+              Review queue · {row.reviewing.length}
+            </p>
+            <div className="flex flex-col gap-2">
+              {row.reviewing.length === 0 ? (
+                <div className="py-4 rounded-xl border border-dashed border-white/[0.04] flex items-center justify-center">
+                  <span className="text-white/15 text-[12px]">Nothing to review</span>
+                </div>
+              ) : (
+                row.reviewing.map((mr) => <MRCard key={mr.id} mr={mr} showRepo={showRepo} />)
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Loading / error / empty states ────────────────────────────────────────────
+
 export function LoadingSkeleton() {
   return (
-    <div className="flex gap-4">
-      {COLUMNS.map((col) => (
-        <div key={col.id} className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-3 px-0.5">
-            <div className="h-3 w-20 bg-white/[0.06] rounded animate-pulse" />
-            <div className="h-3 w-4 bg-white/[0.04] rounded animate-pulse" />
+    <div className="flex flex-col gap-1">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-4 px-3 py-3 border-t border-white/[0.03]">
+          <div className="w-36 shrink-0 flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-white/[0.06] animate-pulse" />
+            <div className="h-3 w-16 bg-white/[0.06] rounded animate-pulse" />
           </div>
-          <div className="flex flex-col gap-2">
-            {Array.from({ length: 2 + (col.id === 'reviewer_action' ? 1 : 0) }).map((_, i) => (
-              <CardSkeleton key={i} />
+          <div className="flex-1 grid grid-cols-[1fr_1fr_80px] gap-6 items-center">
+            {[0, 1, 2].map((j) => (
+              <div key={j} className="flex items-center gap-2">
+                <div className="w-4 h-2.5 bg-white/[0.04] rounded animate-pulse" />
+                <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full animate-pulse" />
+              </div>
             ))}
           </div>
         </div>
@@ -278,58 +366,6 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry: () 
       >
         Retry
       </button>
-    </div>
-  );
-}
-
-function ColumnHeader({ def, count }: { def: ColumnDef; count: number }) {
-  return (
-    <div className="flex items-center justify-between mb-3 px-0.5">
-      <div>
-        <span className={`text-[11px] font-semibold uppercase tracking-widest ${def.accentClass}`}>
-          {def.label}
-        </span>
-        <span className="text-white/15 text-[11px] ml-2">{def.description}</span>
-      </div>
-      <span className="text-white/20 text-[11px] tabular-nums font-mono">{count}</span>
-    </div>
-  );
-}
-
-function EmptyColumn({ def }: { def: ColumnDef }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-10 px-4 rounded-xl border border-dashed border-white/[0.06] text-center">
-      <span className="text-white/20 text-[13px] font-medium mb-1">{def.emptyTitle}</span>
-      <span className="text-white/15 text-[11px] leading-relaxed">{def.emptyBody}</span>
-    </div>
-  );
-}
-
-function MRColumn({ def, mrs, showRepo }: { def: ColumnDef; mrs: GitLabMR[]; showRepo: boolean }) {
-  return (
-    <div className="flex-1 min-w-0">
-      <ColumnHeader def={def} count={mrs.length} />
-      <div className="flex flex-col gap-2">
-        {mrs.length === 0 ? (
-          <EmptyColumn def={def} />
-        ) : (
-          mrs.map((mr) => <MRCard key={mr.id} mr={mr} showRepo={showRepo} />)
-        )}
-      </div>
-    </div>
-  );
-}
-
-function CardSkeleton() {
-  return (
-    <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3.5 animate-pulse">
-      <div className="flex justify-between mb-3">
-        <div className="h-3 w-16 bg-white/[0.06] rounded" />
-        <div className="h-3 w-8 bg-white/[0.04] rounded" />
-      </div>
-      <div className="h-3.5 w-full bg-white/[0.06] rounded mb-1.5" />
-      <div className="h-3.5 w-3/4 bg-white/[0.04] rounded mb-3" />
-      <div className="h-3 w-24 bg-white/[0.04] rounded" />
     </div>
   );
 }
