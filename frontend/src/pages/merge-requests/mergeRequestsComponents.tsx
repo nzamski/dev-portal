@@ -96,6 +96,15 @@ function buildSwimlanes(columns: MRColumns): SwimlaneRow[] {
     ensureMember(mr.author).cols.approved.push(mr);
   }
 
+  const trulyUnassigned: GitLabMR[] = [];
+  for (const mr of columns.unassigned) {
+    if (mr.assignees.length > 0) {
+      for (const assignee of mr.assignees) ensureMember(assignee).cols.author_action.push(mr);
+    } else {
+      trulyUnassigned.push(mr);
+    }
+  }
+
   const rows: SwimlaneRow[] = [...memberMap.values()]
     .map(({ user, cols }) => ({
       member: user,
@@ -104,11 +113,11 @@ function buildSwimlanes(columns: MRColumns): SwimlaneRow[] {
     }))
     .sort((a, b) => b.totalCount - a.totalCount);
 
-  if (columns.unassigned.length > 0) {
+  if (trulyUnassigned.length > 0) {
     rows.unshift({
       member: null,
-      columns: { unassigned: columns.unassigned, author_action: [], reviewer_action: [], approved: [] },
-      totalCount: columns.unassigned.length,
+      columns: { unassigned: trulyUnassigned, author_action: [], reviewer_action: [], approved: [] },
+      totalCount: trulyUnassigned.length,
     });
   }
 
