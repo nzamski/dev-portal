@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
 import { Setting } from './settings/setting.entity';
 import { ServiceEntity } from './services/service.entity';
 import { BoardItemEntity } from './board/board-item.entity';
@@ -10,6 +12,10 @@ import { MergeRequestsModule } from './merge-requests/merge-requests.module';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      exclude: ['/api/(.*)'],
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST ?? 'localhost',
