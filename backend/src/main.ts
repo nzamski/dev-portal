@@ -10,7 +10,7 @@ const bootstrap = async () => {
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
   });
   app.setGlobalPrefix('api');
-  const port = process.env.PORT ?? 3001;
+  const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`API server running on http://localhost:${port}`);
 }

@@ -9,6 +9,7 @@ const DEFAULT_GITLAB_CONFIG: GitLabConfigContract = {
   token: '',
   resourceType: 'group',
   resourceId: '',
+  members: [],
 };
 
 @Injectable()

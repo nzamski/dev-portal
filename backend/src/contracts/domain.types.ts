@@ -16,9 +16,15 @@ export interface BoardItemContract {
   id: string;
 }
 
+export interface GitLabMember {
+  name: string;
+  username: string;
+}
+
 export interface GitLabConfigContract {
   instanceUrl: string;
   token: string;
   resourceType: 'group' | 'project';
   resourceId: string;
+  members: GitLabMember[];
 }

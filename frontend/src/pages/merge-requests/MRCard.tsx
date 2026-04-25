@@ -40,57 +40,58 @@ function firstName(fullName: string): string {
 export function MRCard({ mr, showRepo }: Props) {
   const age = getAge(mr.updated_at);
 
+  const authorLine =
+    mr.assignees.length > 0
+      ? mr.assignees.map((a) => firstName(a.name)).join(', ')
+      : firstName(mr.author.name);
+
+  const reviewerLine =
+    mr.reviewers.length > 0
+      ? mr.reviewers.map((r) => firstName(r.name)).join(', ')
+      : null;
+
   return (
     <a
       href={mr.web_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="block bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] rounded-xl p-3.5 transition-all duration-150 group cursor-pointer"
+      className="group block bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.05] hover:border-white/[0.09] rounded-lg px-2.5 py-1.5 transition-all duration-150 cursor-pointer"
     >
-      {/* MR ref + repo + age */}
-      <div className="flex items-start justify-between gap-2 mb-2.5">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-[11px] text-white/30 font-mono shrink-0 tabular-nums">
-            {mr.references?.short ?? `!${mr.iid}`}
+      {/* Primary row — always visible */}
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="text-[10px] text-white/25 font-mono shrink-0 tabular-nums">
+          {mr.references?.short ?? `!${mr.iid}`}
+        </span>
+        {showRepo && (
+          <span className="text-[10px] text-white/15 bg-white/[0.04] px-1 rounded shrink-0 max-w-[72px] truncate">
+            {mr.projectName}
           </span>
-          {showRepo && (
-            <span className="text-[11px] text-white/20 bg-white/[0.04] px-1.5 py-0.5 rounded-md truncate max-w-[110px]">
-              {mr.projectName}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${AGE_DOT[age.level]}`} />
+        )}
+        <p className="flex-1 text-[12px] text-white/55 group-hover:text-white/75 truncate leading-none transition-colors">
+          {mr.title}
+        </p>
+        <div className="flex items-center gap-1 shrink-0 ml-1">
+          <span className={`w-1.5 h-1.5 rounded-full ${AGE_DOT[age.level]}`} />
           <span className={`text-[10px] font-mono tabular-nums ${AGE_TEXT[age.level]}`}>
             {age.label}
           </span>
         </div>
       </div>
 
-      {/* Title */}
-      <p className="text-[13px] text-white/65 group-hover:text-white/85 leading-snug mb-3 transition-colors line-clamp-2">
-        {mr.title}
-      </p>
-
-      {/* People row */}
-      <div className="flex items-center gap-0 flex-wrap">
-        {mr.assignees.length > 0 ? (
-          <span className="text-[11px] text-white/35 mr-2">
-            <span className="text-white/15 mr-1">by</span>
-            {mr.assignees.map((a) => firstName(a.name)).join(', ')}
-          </span>
-        ) : (
-          <span className="text-[11px] text-white/20 mr-2">
-            <span className="text-white/15 mr-1">by</span>
-            {firstName(mr.author.name)}
-          </span>
-        )}
-        {mr.reviewers.length > 0 && (
-          <span className="text-[11px] text-white/25">
-            <span className="text-white/12 mr-1">→</span>
-            {mr.reviewers.map((r) => firstName(r.name)).join(', ')}
-          </span>
-        )}
+      {/* People row — revealed on hover */}
+      <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-all duration-150">
+        <div className="overflow-hidden">
+          <div className="flex items-center gap-1 pt-1.5 min-w-0">
+            <span className="text-white/15 text-[10px] shrink-0">by</span>
+            <span className="text-[10px] text-white/30 truncate">{authorLine}</span>
+            {reviewerLine && (
+              <>
+                <span className="text-white/10 text-[10px] shrink-0 mx-0.5">→</span>
+                <span className="text-[10px] text-white/25 truncate">{reviewerLine}</span>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </a>
   );

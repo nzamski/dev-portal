@@ -7,6 +7,7 @@ const DEFAULT_CONFIG: GitLabConfig = {
   token: '',
   resourceType: 'group',
   resourceId: '',
+  members: [],
 };
 
 export function useGitLabConfig() {

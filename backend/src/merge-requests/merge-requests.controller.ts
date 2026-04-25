@@ -9,4 +9,5 @@ export class MergeRequestsController {
   findOpen() {
     return this.mergeRequestsService.getOpenMergeRequests();
   }
+
 }
