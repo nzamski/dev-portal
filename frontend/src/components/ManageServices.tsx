@@ -1,7 +1,7 @@
 import { useState, memo } from 'react';
 import { ServiceIcon } from './ServiceIcon';
-import { isMdIcon } from '../lib/icons';
-import type { Service, ServiceLink } from '../types';
+import { isMdIcon } from '@/lib/icons';
+import type { Service, ServiceLink } from '@/types';
 
 type IconSource = 'initials' | 'si' | 'md';
 

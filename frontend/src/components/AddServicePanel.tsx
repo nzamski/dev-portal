@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ServiceIcon } from './ServiceIcon';
-import type { Service } from '../types';
+import type { Service } from '@/types';
 
 interface Props {
   boardIds: string[];

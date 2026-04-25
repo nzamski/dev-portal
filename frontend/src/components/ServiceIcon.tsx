@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { ComponentType } from 'react';
 import type { SimpleIcon } from 'simple-icons';
-import { lookupIcon, isMdIcon, resolveIconColor } from '../lib/icons';
+import { lookupIcon, isMdIcon, resolveIconColor } from '@/lib/icons';
 
 const SHADED_COLOR = 'rgba(255,255,255,0.35)';
 
