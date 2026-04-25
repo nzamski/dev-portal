@@ -14,9 +14,9 @@ export const COLUMNS: ColumnDef[] = [
   {
     id: 'unassigned',
     label: 'Unassigned',
-    description: 'No reviewer or assignee',
+    description: 'No reviewer & no assignee',
     emptyTitle: 'All covered',
-    emptyBody: 'Every open MR has a reviewer or assignee.',
+    emptyBody: 'Every open MR has a reviewer or an assignee.',
     accentClass: 'text-white/30',
   },
   {
