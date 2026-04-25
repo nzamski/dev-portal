@@ -64,16 +64,13 @@ export function ServiceIcon({ serviceName, iconName, size = 22, shaded = false, 
   const label = serviceName ?? '';
   return (
     <span
-      className={className}
+      className={`inline-flex items-center justify-center ${className}`}
       style={{
         fontSize: size * 0.45,
         color: resolvedColor,
         fontWeight: 700,
         letterSpacing: '-0.03em',
         lineHeight: 1,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         width: size,
         height: size,
       }}
