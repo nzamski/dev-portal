@@ -40,7 +40,6 @@ export class MergeRequestsService {
       columns[this.categorize(mergeRequest)].push(mergeRequest);
     }
 
-    columns.unassigned = this.sortMRs(columns.unassigned);
     columns.author_action = this.sortMRs(columns.author_action);
     columns.reviewer_action = this.sortMRs(columns.reviewer_action);
     columns.approved = this.sortMRs(columns.approved);
@@ -94,7 +93,7 @@ export class MergeRequestsService {
     if (mergeRequest.reviewers.length === 0) {
       // Has an assignee but no reviewer — assignee needs to find one
       if (mergeRequest.assignees.length > 0) return 'author_action';
-      return 'unassigned';
+      return 'author_action';
     }
     if (mergeRequest.approved) return 'approved';
     if (mergeRequest.reviewers.some((reviewer) => reviewer.state === 'requested_changes')) {
@@ -126,7 +125,6 @@ export class MergeRequestsService {
 
   private emptyColumns(): MRColumns {
     return {
-      unassigned: [],
       author_action: [],
       reviewer_action: [],
       approved: [],

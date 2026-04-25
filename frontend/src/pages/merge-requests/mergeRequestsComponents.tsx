@@ -13,7 +13,6 @@ interface MemberLoad {
 
 function buildMemberLoad(columns: MRColumns): {
   members: MemberLoad[];
-  unassigned: GitLabMR[];
 } {
   const memberMap = new Map<number, { user: GitLabUser; authoring: GitLabMR[]; reviewing: GitLabMR[] }>();
 
@@ -29,7 +28,6 @@ function buildMemberLoad(columns: MRColumns): {
     ...columns.author_action,
     ...columns.reviewer_action,
     ...columns.approved,
-    ...columns.unassigned,
   ];
 
   for (const mr of allMRs) {
@@ -56,7 +54,7 @@ function buildMemberLoad(columns: MRColumns): {
     }))
     .sort((a, b) => b.totalLoad - a.totalLoad);
 
-  return { members, unassigned: columns.unassigned };
+  return { members };
 }
 
 // ── Member load board ─────────────────────────────────────────────────────────
@@ -78,7 +76,7 @@ export function MRLoadBoard({
     );
   }
 
-  const { members, unassigned } = buildMemberLoad(columns);
+  const { members } = buildMemberLoad(columns);
 
   const maxAuthoring = Math.max(1, ...members.map((m) => m.authoring.length));
   const maxReviewing = Math.max(1, ...members.map((m) => m.reviewing.length));
@@ -114,21 +112,6 @@ export function MRLoadBoard({
         />
       ))}
 
-      {/* Unassigned zone */}
-      {unassigned.length > 0 && (
-        <div className="mt-6 pt-5 border-t border-white/[0.03]">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-white/20 mb-3 px-1">
-            Unassigned · {unassigned.length}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {unassigned.map((mr) => (
-              <div key={mr.id} className="w-72 shrink-0">
-                <MRCard mr={mr} showRepo={showRepo} />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
