@@ -1,5 +1,5 @@
 import { MRCard } from './MRCard';
-import type { GitLabMR, MRColumnId } from './types';
+import type { GitLabMR, GitLabUser, MRColumnId, MRColumns } from './types';
 
 export interface ColumnDef {
   id: MRColumnId;
@@ -56,6 +56,153 @@ export function MRColumnsBoard({
     <div className="grid grid-cols-4 gap-4">
       {COLUMNS.map((col) => (
         <MRColumn key={col.id} def={col} mrs={columns[col.id]} showRepo={showRepo} />
+      ))}
+    </div>
+  );
+}
+
+// ── Swimlane view ─────────────────────────────────────────────────────────
+
+interface SwimlaneRow {
+  member: GitLabUser | null;
+  columns: MRColumns;
+  totalCount: number;
+}
+
+function buildSwimlanes(columns: MRColumns): SwimlaneRow[] {
+  const memberMap = new Map<number, { user: GitLabUser; cols: MRColumns }>();
+
+  function ensureMember(user: GitLabUser) {
+    if (!memberMap.has(user.id)) {
+      memberMap.set(user.id, {
+        user,
+        cols: { unassigned: [], author_action: [], reviewer_action: [], approved: [] },
+      });
+    }
+    return memberMap.get(user.id)!;
+  }
+
+  for (const mr of columns.author_action) {
+    ensureMember(mr.author).cols.author_action.push(mr);
+  }
+
+  for (const mr of columns.reviewer_action) {
+    const pending = mr.reviewers.filter((r) => r.state === 'unreviewed' || r.state === 'reviewed');
+    const targets = pending.length > 0 ? pending : mr.reviewers;
+    for (const r of targets) ensureMember(r).cols.reviewer_action.push(mr);
+  }
+
+  for (const mr of columns.approved) {
+    ensureMember(mr.author).cols.approved.push(mr);
+  }
+
+  const rows: SwimlaneRow[] = [...memberMap.values()]
+    .map(({ user, cols }) => ({
+      member: user,
+      columns: cols,
+      totalCount: Object.values(cols).reduce((s, c) => s + c.length, 0),
+    }))
+    .sort((a, b) => b.totalCount - a.totalCount);
+
+  if (columns.unassigned.length > 0) {
+    rows.unshift({
+      member: null,
+      columns: { unassigned: columns.unassigned, author_action: [], reviewer_action: [], approved: [] },
+      totalCount: columns.unassigned.length,
+    });
+  }
+
+  return rows;
+}
+
+function MemberLabel({ member, totalCount }: { member: GitLabUser | null; totalCount: number }) {
+  const name = member ? member.name.split(' ')[0] : 'Unassigned';
+  const initials = member
+    ? member.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : '—';
+
+  return (
+    <div className="flex items-center gap-2 w-full">
+      <div className="w-6 h-6 rounded-full bg-white/[0.07] flex items-center justify-center shrink-0 text-[9px] font-semibold text-white/35">
+        {initials}
+      </div>
+      <span className="text-[12px] font-medium text-white/45 truncate flex-1 min-w-0">{name}</span>
+      <span className="text-[10px] text-white/20 tabular-nums font-mono shrink-0">{totalCount}</span>
+    </div>
+  );
+}
+
+function SwimlaneRowComponent({ row, showRepo }: { row: SwimlaneRow; showRepo: boolean }) {
+  return (
+    <div className="flex gap-4 pt-3 pb-3 border-t border-white/[0.04]">
+      <div className="w-[152px] shrink-0 flex items-start pt-0.5">
+        <MemberLabel member={row.member} totalCount={row.totalCount} />
+      </div>
+      <div className="flex-1 grid grid-cols-4 gap-4 min-w-0">
+        {COLUMNS.map((col) => {
+          const mrs = row.columns[col.id];
+          return (
+            <div key={col.id} className="flex flex-col gap-2 min-w-0">
+              {mrs.length === 0 ? (
+                <div className="min-h-[36px] rounded-lg border border-dashed border-white/[0.03]" />
+              ) : (
+                mrs.map((mr) => <MRCard key={mr.id} mr={mr} showRepo={showRepo} />)
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function MRSwimlanesBoard({
+  columns,
+  showRepo,
+}: {
+  columns: MRColumns;
+  showRepo: boolean;
+}) {
+  const rows = buildSwimlanes(columns);
+
+  const totalCount = Object.values(columns).reduce((s, c) => s + c.length, 0);
+  if (totalCount === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <p className="text-white/20 text-sm">No open merge requests</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Column header row */}
+      <div className="flex gap-4 mb-1">
+        <div className="w-[152px] shrink-0" />
+        <div className="flex-1 grid grid-cols-4 gap-4">
+          {COLUMNS.map((col) => (
+            <div key={col.id} className="px-0.5">
+              <span className={`text-[11px] font-semibold uppercase tracking-widest ${col.accentClass}`}>
+                {col.label}
+              </span>
+              <span className="text-white/15 text-[11px] ml-2">{col.description}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Swimlane rows */}
+      {rows.map((row) => (
+        <SwimlaneRowComponent
+          key={row.member?.id ?? 'unassigned'}
+          row={row}
+          showRepo={showRepo}
+        />
       ))}
     </div>
   );
