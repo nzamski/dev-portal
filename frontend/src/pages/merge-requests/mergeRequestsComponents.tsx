@@ -14,9 +14,9 @@ export const COLUMNS: ColumnDef[] = [
   {
     id: 'unassigned',
     label: 'Unassigned',
-    description: 'No reviewer assigned',
+    description: 'No reviewer or assignee',
     emptyTitle: 'All covered',
-    emptyBody: 'Every open MR has at least one reviewer assigned.',
+    emptyBody: 'Every open MR has a reviewer or assignee.',
     accentClass: 'text-white/30',
   },
   {
@@ -83,7 +83,12 @@ function buildSwimlanes(columns: MRColumns): SwimlaneRow[] {
   }
 
   for (const mr of columns.author_action) {
-    ensureMember(mr.author).cols.author_action.push(mr);
+    if (mr.reviewers.length === 0 && mr.assignees.length > 0) {
+      // No reviewer yet — route to each assignee's row so they know to find one
+      for (const assignee of mr.assignees) ensureMember(assignee).cols.author_action.push(mr);
+    } else {
+      ensureMember(mr.author).cols.author_action.push(mr);
+    }
   }
 
   for (const mr of columns.reviewer_action) {
@@ -96,15 +101,6 @@ function buildSwimlanes(columns: MRColumns): SwimlaneRow[] {
     ensureMember(mr.author).cols.approved.push(mr);
   }
 
-  const trulyUnassigned: GitLabMR[] = [];
-  for (const mr of columns.unassigned) {
-    if (mr.assignees.length > 0) {
-      for (const assignee of mr.assignees) ensureMember(assignee).cols.author_action.push(mr);
-    } else {
-      trulyUnassigned.push(mr);
-    }
-  }
-
   const rows: SwimlaneRow[] = [...memberMap.values()]
     .map(({ user, cols }) => ({
       member: user,
@@ -113,11 +109,11 @@ function buildSwimlanes(columns: MRColumns): SwimlaneRow[] {
     }))
     .sort((a, b) => b.totalCount - a.totalCount);
 
-  if (trulyUnassigned.length > 0) {
+  if (columns.unassigned.length > 0) {
     rows.unshift({
       member: null,
-      columns: { unassigned: trulyUnassigned, author_action: [], reviewer_action: [], approved: [] },
-      totalCount: trulyUnassigned.length,
+      columns: { unassigned: columns.unassigned, author_action: [], reviewer_action: [], approved: [] },
+      totalCount: columns.unassigned.length,
     });
   }
 

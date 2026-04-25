@@ -82,7 +82,11 @@ export class MergeRequestsService {
   }
 
   private categorize(mergeRequest: GitLabMR): MRColumnId {
-    if (mergeRequest.reviewers.length === 0) return 'unassigned';
+    if (mergeRequest.reviewers.length === 0) {
+      // Has an assignee but no reviewer — assignee needs to find one
+      if (mergeRequest.assignees.length > 0) return 'author_action';
+      return 'unassigned';
+    }
     if (mergeRequest.approved) return 'approved';
     if (mergeRequest.reviewers.some((reviewer) => reviewer.state === 'requested_changes')) {
       return 'author_action';

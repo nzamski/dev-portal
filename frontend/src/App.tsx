@@ -11,7 +11,7 @@ export default function App() {
     setServices,
     addService,
     portalTitle,
-    setPortalTitle,
+    saveTitle,
     boardItems,
     setBoardItems,
     flushChanges,
@@ -56,7 +56,7 @@ export default function App() {
   const commitTitle = () => {
     const t = titleDraft.trim();
     if (t && t !== portalTitle) {
-      setPortalTitle(t);
+      void saveTitle(t);
     }
     setEditingTitle(false);
   };
