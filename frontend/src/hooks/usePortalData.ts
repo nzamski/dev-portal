@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import type { Service, BoardItem } from '../types';
-import apiClient from '../lib/apiClient';
+import type { Service, BoardItem } from '@/types';
+import apiClient from '@/lib/apiClient';
 
 export function usePortalData() {
   const [services, setServicesState] = useState<Service[]>([]);

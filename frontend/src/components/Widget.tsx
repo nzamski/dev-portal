@@ -2,7 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useState } from 'react';
 import { ServiceIcon } from './ServiceIcon';
-import type { Service } from '../types';
+import type { Service } from '@/types';
 
 interface Props {
   service: Service;

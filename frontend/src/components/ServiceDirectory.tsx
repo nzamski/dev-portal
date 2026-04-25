@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { ServiceRow } from './ServiceRow';
-import type { Service } from '../types';
+import type { Service } from '@/types';
 
 interface Props {
   services: Service[];
