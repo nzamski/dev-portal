@@ -54,6 +54,11 @@ export function usePortalData() {
     void reload();
   }, [reload]);
 
+  const saveTitle = useCallback(async (title: string) => {
+    setPortalTitle(title);
+    await settingsApi.setTitle(title);
+  }, [setPortalTitle]);
+
   const flushChanges = useCallback(async () => {
     setSaving(true);
     setError(null);
@@ -77,6 +82,7 @@ export function usePortalData() {
     addService,
     portalTitle,
     setPortalTitle,
+    saveTitle,
     boardItems,
     setBoardItems,
     flushChanges,
