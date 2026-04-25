@@ -99,7 +99,7 @@ function buildSwimlanes(columns: MRColumns): SwimlaneRow[] {
   const trulyUnassigned: GitLabMR[] = [];
   for (const mr of columns.unassigned) {
     if (mr.assignees.length > 0) {
-      for (const assignee of mr.assignees) ensureMember(assignee).cols.unassigned.push(mr);
+      for (const assignee of mr.assignees) ensureMember(assignee).cols.author_action.push(mr);
     } else {
       trulyUnassigned.push(mr);
     }
