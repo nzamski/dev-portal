@@ -33,6 +33,6 @@ export interface GitLabMR {
   approved: boolean;
 }
 
-export type MRColumnId = 'unassigned' | 'author_action' | 'reviewer_action' | 'approved';
+export type MRColumnId = 'author_action' | 'reviewer_action' | 'approved';
 
 export type MRColumns = Record<MRColumnId, GitLabMR[]>;

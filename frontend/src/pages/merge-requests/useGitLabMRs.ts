@@ -3,7 +3,6 @@ import { mergeRequestsApi } from '@/api/mergeRequestsApi';
 import type { MRColumns } from './types';
 
 const EMPTY_COLUMNS: MRColumns = {
-  unassigned: [],
   author_action: [],
   reviewer_action: [],
   approved: [],
