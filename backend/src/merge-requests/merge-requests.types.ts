@@ -19,6 +19,7 @@ export interface GitLabMR {
   web_url: string;
   project_id: number;
   author: GitLabUser;
+  assignee?: GitLabUser;
   assignees: GitLabUser[];
   reviewers: GitLabReviewer[];
   references: {

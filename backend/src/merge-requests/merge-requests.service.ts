@@ -68,10 +68,19 @@ export class MergeRequestsService {
       // Keep this MR in the board even if approvals lookup fails.
     }
 
+    // GitLab free tier returns `assignee` (singular); Premium returns `assignees` (array).
+    // Normalize to always use the array form.
+    const assignees =
+      mergeRequest.assignees?.length > 0
+        ? mergeRequest.assignees
+        : mergeRequest.assignee
+          ? [mergeRequest.assignee]
+          : [];
+
     return {
       ...mergeRequest,
       reviewers: mergeRequest.reviewers ?? [],
-      assignees: mergeRequest.assignees ?? [],
+      assignees,
       projectName: this.extractProjectName(mergeRequest.web_url, config.instanceUrl),
       approved,
     };
