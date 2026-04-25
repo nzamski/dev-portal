@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ServiceIcon } from './ServiceIcon';
-import type { Service } from '@/types';
+import type { Service } from './types';
+import { getPrimaryServiceUrl, isMultiLinkService } from './serviceLinks';
 
 interface Props {
   query: string;
@@ -28,10 +29,8 @@ export function SearchSpotlight({ query, services, onClose }: Props) {
 
   return (
     <div className="fixed top-14 inset-x-0 bottom-0 z-[15]">
-      {/* backdrop */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
-      {/* results panel */}
       <div className="relative max-w-5xl mx-auto px-8 pt-3">
         <div className="bg-[#111111] rounded-2xl border border-white/[0.08] shadow-2xl overflow-hidden">
           <div className="px-4 py-2.5 border-b border-white/[0.05] flex items-center justify-between">
@@ -54,11 +53,11 @@ export function SearchSpotlight({ query, services, onClose }: Props) {
             ) : (
               results.map((s) => {
                 const isOpen = openId === s.id;
-                const multiLink = s.links.length > 1;
+                const multiLink = isMultiLinkService(s);
 
                 const iconEl = (
                   <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0 group-hover:border-white/10 transition-colors">
-                    <ServiceIcon serviceName={s.name} iconName={s.iconName} size={18}  />
+                    <ServiceIcon serviceName={s.name} iconName={s.iconName} size={18} />
                   </div>
                 );
 
@@ -73,7 +72,7 @@ export function SearchSpotlight({ query, services, onClose }: Props) {
                   return (
                     <a
                       key={s.id}
-                      href={s.links[0]?.url}
+                      href={getPrimaryServiceUrl(s)}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={onClose}
@@ -95,7 +94,7 @@ export function SearchSpotlight({ query, services, onClose }: Props) {
                   >
                     <div className={`flex items-center gap-3 px-4 py-3 transition-colors cursor-default group ${isOpen ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
                       <div className={`w-8 h-8 rounded-lg bg-white/[0.04] border flex items-center justify-center shrink-0 transition-colors ${isOpen ? 'border-white/10' : 'border-white/[0.06]'}`}>
-                        <ServiceIcon serviceName={s.name} iconName={s.iconName} size={18}  />
+                        <ServiceIcon serviceName={s.name} iconName={s.iconName} size={18} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <span className={`text-sm transition-colors ${isOpen ? 'text-white/90' : 'text-white/70'}`}>{s.name}</span>

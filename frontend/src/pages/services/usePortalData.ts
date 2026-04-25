@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import type { Service, BoardItem } from '@/types';
+import type { Service, BoardItem } from './types';
 import apiClient from '@/lib/apiClient';
 
 export function usePortalData() {
@@ -65,7 +65,6 @@ export function usePortalData() {
     setBoardItemsState(items);
   }, []);
 
-  // Call when the user exits manage mode — flushes all pending state in one burst.
   const flushChanges = useCallback(() => {
     apiClient.put('/api/settings/title', { value: portalTitleRef.current });
     apiClient.put('/api/services', servicesRef.current);

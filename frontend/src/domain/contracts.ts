@@ -12,3 +12,10 @@ export interface Service {
 }
 
 export type BoardItem = { type: 'service'; id: string };
+
+export interface GitLabConfig {
+  instanceUrl: string;
+  token: string;
+  resourceType: 'group' | 'project';
+  resourceId: string;
+}

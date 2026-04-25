@@ -11,7 +11,21 @@ npm run preview   # serve the production build locally
 npx tsc --noEmit  # type-check only (no emit), useful after edits
 ```
 
-There are no tests or linting scripts configured.
+Backend commands:
+
+```bash
+cd backend
+npm run dev       # start API server at http://localhost:3001
+npm run build     # compile TypeScript backend
+npm run start     # run compiled backend from dist
+```
+
+Quality scripts (both frontend/backend package.json):
+- `npm run typecheck`
+- `npm run lint`
+- `npm run lint:fix`
+- `npm run format`
+- `npm run format:check`
 
 ## Stack
 
@@ -26,18 +40,18 @@ The app is a single-page developer portal with two modes: normal view and manage
 
 ### State ownership
 
-All persistent state lives in `src/hooks/usePortalData.ts`, which wraps `localStorage` for three keys:
-- `portal-title` — the editable header title string
-- `portal-services` — the full services catalog (`Service[]`), seeded from `src/data/services.ts`
-- `portal-board` — the ordered pinned items (`BoardItem[]`), seeded from `DEFAULT_BOARD_IDS`
+Frontend state orchestration is in `frontend/src/features/portal/usePortalData.ts`.
 
-`App.tsx` owns all state via this hook and passes slices down to children.
+Persistence is API-backed (not localStorage):
+- `GET/PUT /api/settings` and `/api/settings/title`
+- `GET/POST/PUT /api/services`
+- `GET/PUT /api/board`
 
 ### Data flow
 
 ```
 App.tsx
-├── usePortalData()          ← all persistent state + setters
+├── usePortalData()                 ← composed portal hooks + persistence
 ├── SearchSpotlight          ← shown when search has text; blurs page, shows results
 ├── Board                    ← pinned grid; receives services + boardItems + setBoardItems
 │   ├── Widget (×N)          ← each pinned tile; drag-sortable, hover brand color
@@ -50,14 +64,12 @@ App.tsx
 
 ### Icon system
 
-`src/data/icons.ts` exports `SERVICE_ICONS: Record<string, IconData>` mapping service IDs to `{ Icon: IconType | null, hex: string, fallbackLabel?: string }`. Azure has no react-icons equivalent so its `Icon` is `null` and it uses `fallbackLabel: 'Az'`.
+`frontend/src/lib/icons.ts` resolves Simple Icons slug/title dynamically and applies the near-black color fallback.
 
-`resolveIconColor(serviceId)` applies the near-black fix (hex values darker than `#333333` are rendered as `#e0e0e0` instead) — use this everywhere a brand color is needed.
-
-`src/components/ServiceIcon.tsx` renders the icon component or a styled text fallback if `Icon` is null/missing.
+`frontend/src/pages/services/ServiceIcon.tsx` renders a resolved icon or text fallback.
 
 ### Adding a new service
 
-1. Add the entry to `ALL_SERVICES` in `src/data/services.ts`
-2. Add an icon mapping in `src/data/icons.ts` (import from `react-icons/si`; check the export exists with `grep -i "<name>" node_modules/react-icons/si/index.d.ts`)
-3. Optionally add the ID to `DEFAULT_BOARD_IDS` to pin it by default
+1. Open Manage mode in the UI and add a service.
+2. Optionally provide `iconName` as a Simple Icons slug or `Md*` Material icon name.
+3. Service and board changes persist through backend API.

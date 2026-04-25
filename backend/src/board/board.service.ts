@@ -2,11 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { BoardItemEntity } from './board-item.entity';
+import type { BoardItemContract } from '../contracts/domain.types';
 
-export interface BoardItem {
-  type: 'service';
-  id: string;
-}
+export type BoardItem = BoardItemContract;
 
 @Injectable()
 export class BoardService {

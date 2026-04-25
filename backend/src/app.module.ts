@@ -6,6 +6,7 @@ import { BoardItemEntity } from './board/board-item.entity';
 import { SettingsModule } from './settings/settings.module';
 import { ServicesModule } from './services/services.module';
 import { BoardModule } from './board/board.module';
+import { MergeRequestsModule } from './merge-requests/merge-requests.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { BoardModule } from './board/board.module';
     SettingsModule,
     ServicesModule,
     BoardModule,
+    MergeRequestsModule,
   ],
 })
 export class AppModule {}

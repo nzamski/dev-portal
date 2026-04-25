@@ -13,7 +13,7 @@ import { useState, useCallback, useMemo, memo } from 'react';
 import { Widget } from './Widget';
 import { AddServicePanel } from './AddServicePanel';
 import { ServiceIcon } from './ServiceIcon';
-import type { BoardItem, Service } from '@/types';
+import type { BoardItem, Service } from './types';
 
 interface Props {
   editMode: boolean;

@@ -1,44 +1,95 @@
 import { useState } from 'react';
-import { Board } from './components/Board';
-import { ServiceDirectory } from './components/ServiceDirectory';
-import { SearchSpotlight } from './components/SearchSpotlight';
-import { ManageServices } from './components/ManageServices';
-import { usePortalData } from './hooks/usePortalData';
+import { useNavigate, useLocation, Navigate, Routes, Route } from 'react-router-dom';
+import { Button } from './components/ui/Button';
+import { ServicesPage } from './pages/services/ServicesPage';
+import { MergeRequestsPage } from './pages/merge-requests/MergeRequestsPage';
+import { usePortalData } from './features/portal/usePortalData';
 
 export default function App() {
-  const { services, setServices, addService, portalTitle, setPortalTitle, boardItems, setBoardItems, flushChanges, loading } = usePortalData();
+  const {
+    services,
+    setServices,
+    addService,
+    portalTitle,
+    setPortalTitle,
+    boardItems,
+    setBoardItems,
+    flushChanges,
+    loading,
+    saving,
+    error,
+    reload,
+  } = usePortalData();
   const [editMode, setEditMode] = useState(false);
   const [search, setSearch] = useState('');
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
+  const [showGitLabSettings, setShowGitLabSettings] = useState(false);
 
-  if (loading) return null;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const onServicesPage = location.pathname === '/services' || location.pathname === '/';
+  const onMRPage = location.pathname === '/merge-requests';
 
-  const showSpotlight = search.trim().length > 0;
+  if (loading) {
+    return (
+      <div className="app-shell grid place-items-center">
+        <p className="text-white/40 text-sm">Loading portal data...</p>
+      </div>
+    );
+  }
+
+  if (error && services.length === 0) {
+    return (
+      <div className="app-shell grid place-items-center px-6">
+        <div className="text-center max-w-lg">
+          <p className="text-red-400/70 text-sm mb-2">Unable to load portal data</p>
+          <p className="text-white/30 text-xs mb-4 break-all">{error}</p>
+          <Button onClick={() => void reload()} size="md">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const commitTitle = () => {
     const t = titleDraft.trim();
-    if (t) setPortalTitle(t);
+    if (t && t !== portalTitle) {
+      setPortalTitle(t);
+    }
     setEditingTitle(false);
   };
 
-  const handleManageToggle = () => {
+  const handleManageToggle = async () => {
     if (editMode) {
-      flushChanges();
+      try {
+        await flushChanges();
+      } catch {
+        // Save errors are already surfaced from the data hook.
+      }
       setEditingTitle(false);
     }
     setEditMode((v) => !v);
   };
 
+  const handlePageChange = (path: string) => {
+    if (location.pathname === path) return;
+    navigate(path);
+    setEditMode(false);
+    setSearch('');
+    setEditingTitle(false);
+  };
+
   return (
-    <div className="min-h-screen bg-[#0c0c0c] text-white font-sans">
+    <div className="app-shell font-sans">
 
       {/* ── Header ─────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 bg-[#0c0c0c]/90 backdrop-blur-xl border-b border-white/[0.05]">
-        <div className="max-w-5xl mx-auto px-8 h-14 flex items-center gap-5">
+      <header className="app-header sticky top-0 z-20 backdrop-blur-xl border-b border-white/[0.05]">
+        <div className="max-w-7xl mx-auto px-8 h-14 flex items-center gap-5">
 
-          {/* wordmark — editable in manage mode */}
-          {editMode && editingTitle ? (
+          {/* wordmark — always editable */}
+          {editingTitle ? (
             <input
               autoFocus
               value={titleDraft}
@@ -52,12 +103,9 @@ export default function App() {
             />
           ) : (
             <span
-              onClick={editMode ? () => { setTitleDraft(portalTitle); setEditingTitle(true); } : undefined}
-              title={editMode ? 'Click to rename' : undefined}
-              className={[
-                'text-white/70 text-sm font-medium tracking-tight shrink-0',
-                editMode ? 'cursor-text hover:text-white/90 border-b border-dashed border-white/20 transition-colors' : '',
-              ].join(' ')}
+              onClick={() => { setTitleDraft(portalTitle); setEditingTitle(true); }}
+              title="Click to rename"
+              className="text-white/70 text-sm font-medium tracking-tight shrink-0 cursor-text hover:text-white/90 border-b border-dashed border-white/20 hover:border-white/40 transition-colors"
             >
               {portalTitle}
             </span>
@@ -65,81 +113,122 @@ export default function App() {
 
           <span className="text-white/10 select-none">|</span>
 
-          {/* search */}
-          <div className="flex-1 relative">
-            <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-            <input
-              type="text"
-              placeholder="Search services…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Escape') setSearch(''); }}
-              className="w-full bg-transparent pl-8 pr-7 py-1.5 text-[13px] text-white/70 placeholder-white/20 outline-none"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors p-1"
-              >
-                <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
-                  <path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          {/* nav tabs */}
+          <nav className="flex items-center gap-0.5">
+            <button
+              onClick={() => handlePageChange('/services')}
+              className={[
+                'h-7 px-3 rounded-lg text-[13px] font-medium transition-all duration-150',
+                onServicesPage
+                  ? 'text-white/80 bg-white/[0.07]'
+                  : 'text-white/30 hover:text-white/55 hover:bg-white/[0.04]',
+              ].join(' ')}
+            >
+              Services
+            </button>
+            <button
+              onClick={() => handlePageChange('/merge-requests')}
+              className={[
+                'h-7 px-3 rounded-lg text-[13px] font-medium transition-all duration-150',
+                onMRPage
+                  ? 'text-white/80 bg-white/[0.07]'
+                  : 'text-white/30 hover:text-white/55 hover:bg-white/[0.04]',
+              ].join(' ')}
+            >
+              Merge Requests
+            </button>
+          </nav>
+
+          {/* search — services page only */}
+          {onServicesPage && (
+            <>
+              <span className="text-white/10 select-none">|</span>
+              <div className="flex-1 relative">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                 </svg>
-              </button>
+                <input
+                  type="text"
+                  placeholder="Search services…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Escape') setSearch(''); }}
+                  className="w-full bg-transparent pl-8 pr-7 py-1.5 text-[13px] text-white/70 placeholder-white/20 outline-none"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch('')}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors p-1"
+                  >
+                    <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
+                      <path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {onServicesPage && (
+            <div>
+              <Button
+                onClick={() => void handleManageToggle()}
+                variant={editMode ? 'solid' : 'ghost'}
+                className="px-3.5"
+              >
+                {editMode ? (saving ? 'Saving...' : 'Done') : 'Manage'}
+              </Button>
+            </div>
+          )}
+
+          <div className="ml-auto flex items-center gap-2">
+            {onMRPage && (
+              <Button onClick={() => setShowGitLabSettings(true)} className="px-3.5">
+                Settings
+              </Button>
             )}
           </div>
-
-          {/* manage */}
-          <button
-            onClick={handleManageToggle}
-            className={[
-              'shrink-0 h-7 px-3.5 rounded-lg text-xs font-medium transition-all duration-200',
-              editMode
-                ? 'bg-white text-[#0c0c0c]'
-                : 'bg-white/[0.07] text-white/50 hover:bg-white/[0.1] hover:text-white/70 border border-white/[0.07]',
-            ].join(' ')}
-          >
-            {editMode ? 'Done' : 'Manage'}
-          </button>
         </div>
       </header>
 
-      {/* ── Spotlight ───────────────────────────────────────── */}
-      {showSpotlight && (
-        <SearchSpotlight
-          query={search}
-          services={services}
-          onClose={() => setSearch('')}
+      {/* ── Routes ─────────────────────────────────────────── */}
+      <Routes>
+        <Route path="/" element={<Navigate to="/services" replace />} />
+        <Route
+          path="/services"
+          element={
+            <ServicesPage
+              services={services}
+              setServices={setServices}
+              addService={addService}
+              boardItems={boardItems}
+              setBoardItems={setBoardItems}
+              editMode={editMode}
+              search={search}
+              onCloseSearch={() => setSearch('')}
+            />
+          }
         />
-      )}
-
-      {/* ── Pinned board ────────────────────────────────────── */}
-      <div className="max-w-5xl mx-auto px-8 pt-7 pb-7">
-        {editMode && (
-          <p className="text-white/20 text-[11px] mb-3">
-            Drag to reorder · click × to remove
-          </p>
-        )}
-        <Board
-          editMode={editMode}
-          services={services}
-          boardItems={boardItems}
-          setBoardItems={setBoardItems}
+        <Route
+          path="/merge-requests"
+          element={
+            <MergeRequestsPage
+              showSettings={showGitLabSettings}
+              onCloseSettings={() => setShowGitLabSettings(false)}
+              onOpenSettings={() => setShowGitLabSettings(true)}
+            />
+          }
         />
-      </div>
+      </Routes>
 
-      {/* ── Manage / Directory ──────────────────────────────── */}
-      {editMode ? (
-        <ManageServices services={services} setServices={setServices} addService={addService} />
-      ) : (
-        <div className="max-w-5xl mx-auto px-8">
-          <ServiceDirectory services={services} />
+      {error && (
+        <div className="fixed bottom-4 right-4 z-30 max-w-sm rounded-xl border border-red-400/30 bg-[#1a0f12] px-3 py-2 text-xs text-red-200/80">
+          {error}
         </div>
       )}
 
       {/* ── Footer ──────────────────────────────────────────── */}
-      <footer className="max-w-5xl mx-auto px-8 py-6 mt-8 border-t border-white/[0.05]">
+      <footer className="max-w-7xl mx-auto px-8 py-6 mt-8 border-t border-white/[0.05]">
         <p className="text-white/20 text-[11px] text-center">
           &copy; {new Date().getFullYear()} Noam Zamski. All rights reserved.
         </p>

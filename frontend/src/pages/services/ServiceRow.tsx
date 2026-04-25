@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { ServiceIcon } from './ServiceIcon';
-import type { Service } from '@/types';
+import type { Service } from './types';
+import { getPrimaryServiceUrl, isMultiLinkService } from './serviceLinks';
 
 interface Props {
   service: Service;
 }
 
 export function ServiceRow({ service }: Props) {
-  const isMultiLink = service.links.length > 1;
+  const isMultiLink = isMultiLinkService(service);
   const [expanded, setExpanded] = useState(false);
 
   const iconBox = (dimmed: boolean) => (
@@ -24,7 +25,7 @@ export function ServiceRow({ service }: Props) {
   if (!isMultiLink) {
     return (
       <a
-        href={service.links[0]?.url}
+        href={getPrimaryServiceUrl(service)}
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors group"
@@ -47,7 +48,6 @@ export function ServiceRow({ service }: Props) {
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
     >
-      {/* Main row — not an anchor since it has multiple destinations */}
       <div className={`flex items-center gap-3 px-4 py-3 transition-colors cursor-default ${expanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
         {iconBox(!expanded)}
         <div className="min-w-0 flex-1">
@@ -59,7 +59,6 @@ export function ServiceRow({ service }: Props) {
         </span>
       </div>
 
-      {/* Expandable sub-links */}
       <div
         className="overflow-hidden transition-all duration-200"
         style={{ maxHeight: expanded ? `${service.links!.length * 40}px` : '0px' }}

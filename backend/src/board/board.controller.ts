@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Put } from '@nestjs/common';
-import { BoardService, type BoardItem } from './board.service';
+import { BoardService } from './board.service';
+import type { ReplaceBoardDto } from './dto/board.dto';
 
 @Controller('board')
 export class BoardController {
@@ -11,7 +12,7 @@ export class BoardController {
   }
 
   @Put()
-  replace(@Body() items: BoardItem[]) {
+  replace(@Body() items: ReplaceBoardDto) {
     return this.board.replace(items);
   }
 }

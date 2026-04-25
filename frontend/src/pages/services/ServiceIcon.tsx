@@ -23,7 +23,7 @@ function useMdIcon(iconName: string | undefined): MdIconComponent | null {
       setIcon(null);
       return;
     }
-    // @ts-ignore — dynamic import; Vite bundles react-icons/md as a separate chunk
+    // @ts-expect-error dynamic import exposes a module namespace with string keys
     import('react-icons/md').then((mod: Record<string, MdIconComponent>) => {
       const Comp = mod[iconName!];
       setIcon(Comp ? () => Comp : null);

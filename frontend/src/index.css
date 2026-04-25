@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+:root {
+  --bg: #0c0c0c;
+  --bg-elevated: #111111;
+  --text: #ffffff;
+}
+
 /* scrollbar */
 .scrollbar-none { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
@@ -9,4 +15,20 @@
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app-header {
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+}
+
+.surface {
+  background: var(--bg-elevated);
 }

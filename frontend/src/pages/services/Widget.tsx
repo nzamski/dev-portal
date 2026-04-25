@@ -2,7 +2,8 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useState } from 'react';
 import { ServiceIcon } from './ServiceIcon';
-import type { Service } from '@/types';
+import type { Service } from './types';
+import { getPrimaryServiceUrl, isMultiLinkService } from './serviceLinks';
 
 interface Props {
   service: Service;
@@ -12,7 +13,7 @@ interface Props {
 
 export function Widget({ service, editMode, onRemove }: Props) {
   const [hovered, setHovered] = useState(false);
-  const isMultiLink = service.links.length > 1;
+  const isMultiLink = isMultiLinkService(service);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: service.id,
@@ -22,7 +23,6 @@ export function Widget({ service, editMode, onRemove }: Props) {
   const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
-    // Outer div: dnd anchor + mouse-leave scope (covers tile + floating panel)
     <div
       ref={setNodeRef}
       style={style}
@@ -30,10 +30,13 @@ export function Widget({ service, editMode, onRemove }: Props) {
       onMouseEnter={() => !editMode && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Visual tile */}
       <div
         {...(editMode ? { ...attributes, ...listeners } : {})}
-        onClick={() => { if (!editMode && !isMultiLink) window.open(service.links[0]?.url, '_blank', 'noopener'); }}
+        onClick={() => {
+          if (!editMode && !isMultiLink) {
+            window.open(getPrimaryServiceUrl(service), '_blank', 'noopener');
+          }
+        }}
         className={[
           'aspect-square rounded-2xl select-none',
           'flex flex-col items-center justify-center gap-2',
@@ -47,7 +50,6 @@ export function Widget({ service, editMode, onRemove }: Props) {
             : 'cursor-pointer hover:bg-[#1c1c1c] hover:border-white/10 active:scale-[0.96]',
         ].join(' ')}
       >
-        {/* remove badge */}
         {editMode && (
           <button
             onPointerDown={(e) => e.stopPropagation()}
@@ -74,7 +76,6 @@ export function Widget({ service, editMode, onRemove }: Props) {
           {service.name}
         </span>
 
-        {/* Multi-link indicator dots */}
         {isMultiLink && !editMode && (
           <div className="absolute bottom-2 flex gap-[3px]">
             {service.links!.slice(0, 4).map((_, i) => (
@@ -84,8 +85,6 @@ export function Widget({ service, editMode, onRemove }: Props) {
         )}
       </div>
 
-      {/* Floating link-picker panel — appears on hover, panel is a DOM child so
-          mouseleave on the outer div won't fire while the pointer is inside it */}
       {isMultiLink && !editMode && (
         <div
           className={[

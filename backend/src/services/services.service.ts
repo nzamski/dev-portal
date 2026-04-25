@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceEntity } from './service.entity';
+import type { ServiceContract } from '../contracts/domain.types';
 
-export type Service = ServiceEntity;
+export type Service = ServiceContract;
 
 @Injectable()
 export class ServicesService {
@@ -16,11 +17,11 @@ export class ServicesService {
     return this.repo.find({ order: { name: 'ASC' } });
   }
 
-  create(service: Omit<ServiceEntity, 'id'>): Promise<ServiceEntity> {
+  create(service: Omit<ServiceContract, 'id'>): Promise<ServiceEntity> {
     return this.repo.save(this.repo.create(service));
   }
 
-  async update(id: string, data: Omit<ServiceEntity, 'id'>): Promise<ServiceEntity | null> {
+  async update(id: string, data: Omit<ServiceContract, 'id'>): Promise<ServiceEntity | null> {
     const existing = await this.repo.findOne({ where: { id } });
     if (!existing) return null;
     return this.repo.save({ ...existing, ...data });
@@ -30,7 +31,7 @@ export class ServicesService {
     await this.repo.delete(id);
   }
 
-  async syncAll(incoming: ServiceEntity[]): Promise<ServiceEntity[]> {
+  async syncAll(incoming: ServiceContract[]): Promise<ServiceEntity[]> {
     const current = await this.repo.find();
     const incomingIds = new Set(incoming.map((s) => s.id));
     const toDelete = current.filter((c) => !incomingIds.has(c.id));
