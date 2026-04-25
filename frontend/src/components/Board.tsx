@@ -98,7 +98,7 @@ export function Board({ editMode, services, boardItems, setBoardItems }: Props) 
         <DragOverlay dropAnimation={{ duration: 150, easing: 'ease' }}>
           {activeService && (
             <div className="aspect-square w-20 rounded-2xl bg-[#1c1c1c] border border-white/10 flex flex-col items-center justify-center gap-2 shadow-2xl ring-1 ring-white/10 scale-105">
-              <ServiceIcon serviceId={activeService.id} size={26} color="rgba(255,255,255,0.6)" />
+              <ServiceIcon serviceId={activeService.id} serviceName={activeService.name} iconName={activeService.iconName} size={26} color="rgba(255,255,255,0.6)" />
               <span className="text-[11px] text-white/60">{activeService.name}</span>
             </div>
           )}

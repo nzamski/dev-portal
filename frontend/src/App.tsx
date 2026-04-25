@@ -6,11 +6,13 @@ import { ManageServices } from './components/ManageServices';
 import { usePortalData } from './hooks/usePortalData';
 
 export default function App() {
-  const { services, setServices, portalTitle, setPortalTitle, boardItems, setBoardItems } = usePortalData();
+  const { services, setServices, portalTitle, setPortalTitle, boardItems, setBoardItems, flushChanges, loading } = usePortalData();
   const [editMode, setEditMode] = useState(false);
   const [search, setSearch] = useState('');
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
+
+  if (loading) return null;
 
   const showSpotlight = search.trim().length > 0;
 
@@ -21,7 +23,10 @@ export default function App() {
   };
 
   const handleManageToggle = () => {
-    if (editMode) setEditingTitle(false);
+    if (editMode) {
+      flushChanges();
+      setEditingTitle(false);
+    }
     setEditMode((v) => !v);
   };
 
@@ -113,7 +118,7 @@ export default function App() {
       <div className="max-w-5xl mx-auto px-8 pt-7 pb-7">
         {editMode && (
           <p className="text-white/20 text-[11px] mb-3">
-            Drag to reorder · click × to remove · click title to rename
+            Drag to reorder · click × to remove
           </p>
         )}
         <Board
@@ -128,19 +133,17 @@ export default function App() {
       {editMode ? (
         <ManageServices services={services} setServices={setServices} />
       ) : (
-        <>
-          <div className="max-w-5xl mx-auto px-8 mb-8">
-            <div className="flex items-center gap-4">
-              <div className="flex-1 h-px bg-white/[0.05]" />
-              <span className="text-white/15 text-[11px] tracking-widest uppercase">All services</span>
-              <div className="flex-1 h-px bg-white/[0.05]" />
-            </div>
-          </div>
-          <div className="max-w-5xl mx-auto px-8">
-            <ServiceDirectory services={services} />
-          </div>
-        </>
+        <div className="max-w-5xl mx-auto px-8">
+          <ServiceDirectory services={services} />
+        </div>
       )}
+
+      {/* ── Footer ──────────────────────────────────────────── */}
+      <footer className="max-w-5xl mx-auto px-8 py-6 mt-8 border-t border-white/[0.05]">
+        <p className="text-white/20 text-[11px] text-center">
+          &copy; {new Date().getFullYear()} Noam Zamski. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 }

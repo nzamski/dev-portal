@@ -53,7 +53,7 @@ export function AddServicePanel({ boardIds, services, onAdd, onClose }: Props) {
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.05] transition-colors group text-left"
             >
               <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.06] flex items-center justify-center shrink-0">
-                <ServiceIcon serviceId={s.id} size={18} color={resolveIconColor(s.id)} />
+                <ServiceIcon serviceId={s.id} serviceName={s.name} size={18} color={resolveIconColor(s.id, s.name)} />
               </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-white/80 text-sm leading-tight">{s.name}</p>
