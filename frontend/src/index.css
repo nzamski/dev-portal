@@ -1,12 +1,32 @@
 @import "tailwindcss";
 
+/* ── Theme tokens ─────────────────────────────────────────── */
 :root {
+  /* Dark (default) */
   --bg: #0c0c0c;
   --bg-elevated: #111111;
+  --bg-widget: #131313;
+  --bg-hover: #1c1c1c;
   --text: #ffffff;
+  --ink: 255 255 255;
+  /* Accent colors — light enough to read on dark bg */
+  --color-author: rgb(56 189 248 / 0.70);   /* sky-400/70 */
+  --color-reviewer: rgb(251 191 36 / 0.70); /* amber-400/70 */
 }
 
-/* scrollbar */
+:root[data-theme="light"] {
+  --bg: #f4f4f5;
+  --bg-elevated: #ffffff;
+  --bg-widget: #f9f9fb;
+  --bg-hover: #eaeaec;
+  --text: #111111;
+  --ink: 17 17 17;
+  /* Accent colors — dark enough to read on light bg */
+  --color-author: #0284c7;   /* sky-600 */
+  --color-reviewer: #b45309; /* amber-700 */
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
 .scrollbar-none { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
@@ -26,9 +46,71 @@ body {
 }
 
 .app-header {
-  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
 }
 
 .surface {
   background: var(--bg-elevated);
+}
+
+/* ── Semantic theme utilities ─────────────────────────────── */
+@layer utilities {
+  /* Solid background surfaces */
+  .bg-widget { background-color: var(--bg-widget); }
+  .bg-hover  { background-color: var(--bg-hover); }
+
+  /* Text — ink opacity scale */
+  .text-ink-10 { color: rgb(var(--ink) / 0.10); }
+  .text-ink-15 { color: rgb(var(--ink) / 0.15); }
+  .text-ink-20 { color: rgb(var(--ink) / 0.20); }
+  .text-ink-25 { color: rgb(var(--ink) / 0.25); }
+  .text-ink-30 { color: rgb(var(--ink) / 0.30); }
+  .text-ink-35 { color: rgb(var(--ink) / 0.35); }
+  .text-ink-40 { color: rgb(var(--ink) / 0.40); }
+  .text-ink-50 { color: rgb(var(--ink) / 0.50); }
+  .text-ink-55 { color: rgb(var(--ink) / 0.55); }
+  .text-ink-60 { color: rgb(var(--ink) / 0.60); }
+  .text-ink-70 { color: rgb(var(--ink) / 0.70); }
+  .text-ink-75 { color: rgb(var(--ink) / 0.75); }
+  .text-ink-80 { color: rgb(var(--ink) / 0.80); }
+  .text-ink-85 { color: rgb(var(--ink) / 0.85); }
+  .text-ink-90 { color: rgb(var(--ink) / 0.90); }
+
+  /* Background — ink opacity scale */
+  .bg-ink-2  { background-color: rgb(var(--ink) / 0.02); }
+  .bg-ink-3  { background-color: rgb(var(--ink) / 0.03); }
+  .bg-ink-4  { background-color: rgb(var(--ink) / 0.04); }
+  .bg-ink-5  { background-color: rgb(var(--ink) / 0.05); }
+  .bg-ink-6  { background-color: rgb(var(--ink) / 0.06); }
+  .bg-ink-7  { background-color: rgb(var(--ink) / 0.07); }
+  .bg-ink-8  { background-color: rgb(var(--ink) / 0.08); }
+  .bg-ink-10 { background-color: rgb(var(--ink) / 0.10); }
+  .bg-ink-12 { background-color: rgb(var(--ink) / 0.12); }
+  .bg-ink-20 { background-color: rgb(var(--ink) / 0.20); }
+
+  /* Border — ink opacity scale */
+  .border-ink-3  { border-color: rgb(var(--ink) / 0.03); }
+  .border-ink-4  { border-color: rgb(var(--ink) / 0.04); }
+  .border-ink-5  { border-color: rgb(var(--ink) / 0.05); }
+  .border-ink-6  { border-color: rgb(var(--ink) / 0.06); }
+  .border-ink-7  { border-color: rgb(var(--ink) / 0.07); }
+  .border-ink-8  { border-color: rgb(var(--ink) / 0.08); }
+  .border-ink-9  { border-color: rgb(var(--ink) / 0.09); }
+  .border-ink-10 { border-color: rgb(var(--ink) / 0.10); }
+  .border-ink-15 { border-color: rgb(var(--ink) / 0.15); }
+  .border-ink-20 { border-color: rgb(var(--ink) / 0.20); }
+  .border-ink-30 { border-color: rgb(var(--ink) / 0.30); }
+  .border-ink-40 { border-color: rgb(var(--ink) / 0.40); }
+
+  /* Divide — ink opacity */
+  .divide-ink-4 > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgb(var(--ink) / 0.04);
+  }
+
+  /* Placeholder */
+  .placeholder-ink-20::placeholder { color: rgb(var(--ink) / 0.20); }
+
+  /* Accent utilities */
+  .text-author   { color: var(--color-author); }
+  .text-reviewer { color: var(--color-reviewer); }
 }

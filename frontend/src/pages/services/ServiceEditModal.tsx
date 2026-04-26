@@ -79,11 +79,11 @@ export function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
   return (
     <Modal
       onClose={onClose}
-      panelClassName="surface w-full max-w-sm mx-8 rounded-2xl border border-white/[0.08] shadow-2xl max-h-[90vh] overflow-y-auto"
+      panelClassName="surface w-full max-w-sm mx-8 rounded-2xl border border-ink-8 shadow-2xl max-h-[90vh] overflow-y-auto"
     >
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
-        <h2 className="text-white/50 text-xs font-semibold">{service ? 'Edit service' : 'Add service'}</h2>
-        <button onClick={onClose} className="text-white/30 hover:text-white/70 transition-colors p-1">
+        <h2 className="text-ink-50 text-xs font-semibold">{service ? 'Edit service' : 'Add service'}</h2>
+        <button onClick={onClose} className="text-ink-30 hover:text-ink-70 transition-colors p-1">
           <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
             <path
               d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5"
@@ -108,10 +108,10 @@ export function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
         />
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-ink-4 border border-ink-6 flex items-center justify-center shrink-0">
               <ServiceIcon serviceName={form.name || undefined} iconName={previewIconName} size={16} />
             </div>
-            <div className="flex rounded-lg border border-white/[0.08] overflow-hidden text-[11px] font-medium">
+            <div className="flex rounded-lg border border-ink-8 overflow-hidden text-[11px] font-medium">
               {(['initials', 'si', 'md'] as IconSource[]).map((source) => {
                 const label =
                   source === 'initials'
@@ -124,7 +124,7 @@ export function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
                     key={source}
                     type="button"
                     onClick={() => handleIconSourceChange(source)}
-                    className={`px-2.5 py-1.5 transition-colors ${iconSource === source ? 'bg-white/[0.12] text-white/80' : 'text-white/30 hover:text-white/50 hover:bg-white/[0.05]'}`}
+                    className={`px-2.5 py-1.5 transition-colors ${iconSource === source ? 'bg-ink-12 text-ink-80' : 'text-ink-30 hover:text-ink-50 hover:bg-ink-5'}`}
                   >
                     {label}
                   </button>
@@ -139,7 +139,7 @@ export function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
                 value={form.iconName}
                 onChange={(event) => setForm({ ...form, iconName: event.target.value })}
               />
-              <p className="text-white/20 text-[11px] mt-1 pl-1">Find slugs at simpleicons.org</p>
+              <p className="text-ink-20 text-[11px] mt-1 pl-1">Find slugs at simpleicons.org</p>
             </div>
           )}
           {iconSource === 'md' && (
@@ -149,7 +149,7 @@ export function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
                 value={isMdIcon(form.iconName) ? form.iconName.slice(2) : form.iconName}
                 onChange={(event) => handleMdInput(event.target.value)}
               />
-              <p className="text-white/20 text-[11px] mt-1 pl-1">
+              <p className="text-ink-20 text-[11px] mt-1 pl-1">
                 Browse at react-icons.github.io/react-icons/md
               </p>
             </div>
@@ -157,10 +157,10 @@ export function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
         </div>
         <div className="mt-1">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-white/30 text-[11px] font-medium uppercase tracking-wider">URLs</span>
+            <span className="text-ink-30 text-[11px] font-medium uppercase tracking-wider">URLs</span>
             <button
               onClick={addLink}
-              className="text-white/30 hover:text-white/60 text-[11px] px-2 py-0.5 rounded-lg hover:bg-white/[0.06] transition-all"
+              className="text-ink-30 hover:text-ink-60 text-[11px] px-2 py-0.5 rounded-lg hover:bg-ink-6 transition-all"
             >
               + Add
             </button>
@@ -170,18 +170,14 @@ export function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
               <div key={index} className="flex items-center gap-1.5">
                 {isMulti && (
                   <TextInput
-                    className="flex-[0_0_30%] bg-white/[0.05] border border-white/[0.08] rounded-xl px-2.5 py-1.5 text-sm text-white placeholder-white/20 outline-none focus:border-white/15 transition-colors min-w-0"
+                    className="flex-[0_0_30%] min-w-0"
                     placeholder="Label *"
                     value={link.label}
                     onChange={(event) => updateLink(index, 'label', event.target.value)}
                   />
                 )}
                 <TextInput
-                  className={
-                    isMulti
-                      ? 'flex-1 bg-white/[0.05] border border-white/[0.08] rounded-xl px-2.5 py-1.5 text-sm text-white placeholder-white/20 outline-none focus:border-white/15 transition-colors min-w-0'
-                      : ''
-                  }
+                  className={isMulti ? 'flex-1 min-w-0' : ''}
                   placeholder="https://..."
                   value={link.url}
                   onChange={(event) => updateLink(index, 'url', event.target.value)}
@@ -189,7 +185,7 @@ export function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
                 {isMulti && (
                   <button
                     onClick={() => removeLink(index)}
-                    className="shrink-0 w-6 h-6 flex items-center justify-center text-white/25 hover:text-red-400/70 rounded-lg hover:bg-red-900/20 transition-all"
+                    className="shrink-0 w-6 h-6 flex items-center justify-center text-ink-25 hover:text-red-400/70 rounded-lg hover:bg-red-900/20 transition-all"
                   >
                     <svg width="7" height="7" viewBox="0 0 10 10" fill="none">
                       <path
@@ -205,7 +201,7 @@ export function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
             ))}
           </div>
           {isMulti && (
-            <p className="text-white/20 text-[11px] mt-1.5 pl-1">
+            <p className="text-ink-20 text-[11px] mt-1.5 pl-1">
               Labels are required when multiple URLs are added.
             </p>
           )}

@@ -35,7 +35,7 @@ export function ServicesPage({
 
       <div className="max-w-5xl mx-auto px-8 pt-7 pb-7">
         {editMode && (
-          <p className="text-white/20 text-[11px] mb-3">
+          <p className="text-ink-20 text-[11px] mb-3">
             Drag to reorder · click × to remove
           </p>
         )}

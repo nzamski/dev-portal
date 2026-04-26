@@ -33,8 +33,8 @@ export function isMdIcon(name: string | undefined): boolean {
 }
 
 export function resolveIconColor(iconName?: string): string {
-  if (isMdIcon(iconName)) return 'rgba(255,255,255,0.6)';
+  if (isMdIcon(iconName)) return 'rgb(var(--ink) / 0.60)';
   const icon = iconName ? lookupIcon(iconName) : null;
-  if (!icon) return 'rgba(255,255,255,0.4)';
-  return isTooDark(icon.hex) ? '#e0e0e0' : `#${icon.hex}`;
+  if (!icon) return 'rgb(var(--ink) / 0.40)';
+  return isTooDark(icon.hex) ? 'rgb(var(--ink) / 0.60)' : `#${icon.hex}`;
 }

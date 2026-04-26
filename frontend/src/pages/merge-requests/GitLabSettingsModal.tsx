@@ -72,13 +72,13 @@ export function GitLabSettingsModal({ config, onSave, onClose }: Props) {
   return (
     <Modal
       onClose={onClose}
-      panelClassName="surface w-full max-w-sm mx-8 rounded-2xl border border-white/[0.08] shadow-2xl"
+      panelClassName="surface w-full max-w-sm mx-8 rounded-2xl border border-ink-8 shadow-2xl"
     >
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
-        <h2 className="text-white/50 text-xs font-semibold">GitLab Settings</h2>
+        <h2 className="text-ink-50 text-xs font-semibold">GitLab Settings</h2>
         <button
           onClick={onClose}
-          className="text-white/30 hover:text-white/70 transition-colors p-1"
+          className="text-ink-30 hover:text-ink-70 transition-colors p-1"
         >
           <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
             <path
@@ -93,7 +93,7 @@ export function GitLabSettingsModal({ config, onSave, onClose }: Props) {
 
       <div className="px-5 pb-5 flex flex-col gap-2.5">
         <div>
-          <label className="text-white/30 text-[11px] font-medium uppercase tracking-wider block mb-1.5">
+          <label className="text-ink-30 text-[11px] font-medium uppercase tracking-wider block mb-1.5">
             Instance URL
           </label>
           <TextInput
@@ -104,7 +104,7 @@ export function GitLabSettingsModal({ config, onSave, onClose }: Props) {
         </div>
 
         <div>
-          <label className="text-white/30 text-[11px] font-medium uppercase tracking-wider block mb-1.5">
+          <label className="text-ink-30 text-[11px] font-medium uppercase tracking-wider block mb-1.5">
             Access Token
           </label>
           <div className="relative">
@@ -118,7 +118,7 @@ export function GitLabSettingsModal({ config, onSave, onClose }: Props) {
             <button
               type="button"
               onClick={() => setShowToken((v) => !v)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/25 hover:text-white/60 transition-colors"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-25 hover:text-ink-60 transition-colors"
               tabIndex={-1}
             >
               {showToken ? (
@@ -135,16 +135,16 @@ export function GitLabSettingsModal({ config, onSave, onClose }: Props) {
               )}
             </button>
           </div>
-          <p className="text-white/20 text-[11px] mt-1 pl-1">
-            Requires <code className="text-white/30">read_api</code> scope. Stored on the backend.
+          <p className="text-ink-20 text-[11px] mt-1 pl-1">
+            Requires <code className="text-ink-30">read_api</code> scope. Stored on the backend.
           </p>
         </div>
 
         <div>
-          <label className="text-white/30 text-[11px] font-medium uppercase tracking-wider block mb-1.5">
+          <label className="text-ink-30 text-[11px] font-medium uppercase tracking-wider block mb-1.5">
             Scope
           </label>
-          <div className="flex rounded-xl border border-white/[0.08] overflow-hidden text-[11px] font-medium">
+          <div className="flex rounded-xl border border-ink-8 overflow-hidden text-[11px] font-medium">
             {(['group', 'project'] as const).map((type) => (
               <button
                 key={type}
@@ -152,8 +152,8 @@ export function GitLabSettingsModal({ config, onSave, onClose }: Props) {
                 onClick={() => setForm((f) => ({ ...f, resourceType: type }))}
                 className={`flex-1 py-2 transition-colors capitalize ${
                   form.resourceType === type
-                    ? 'bg-white/[0.1] text-white/80'
-                    : 'text-white/30 hover:text-white/50 hover:bg-white/[0.04]'
+                    ? 'bg-ink-10 text-ink-80'
+                    : 'text-ink-30 hover:text-ink-50 hover:bg-ink-4'
                 }`}
               >
                 {type}
@@ -163,7 +163,7 @@ export function GitLabSettingsModal({ config, onSave, onClose }: Props) {
         </div>
 
         <div>
-          <label className="text-white/30 text-[11px] font-medium uppercase tracking-wider block mb-1.5">
+          <label className="text-ink-30 text-[11px] font-medium uppercase tracking-wider block mb-1.5">
             {form.resourceType === 'group' ? 'Group ID or Path' : 'Project ID or Path'}
           </label>
           <TextInput
@@ -176,7 +176,7 @@ export function GitLabSettingsModal({ config, onSave, onClose }: Props) {
         </div>
 
         <div className="pt-1">
-          <label className="text-white/30 text-[11px] font-medium uppercase tracking-wider block mb-1.5">
+          <label className="text-ink-30 text-[11px] font-medium uppercase tracking-wider block mb-1.5">
             Team Members
           </label>
           <div className="flex flex-col gap-1">
@@ -195,7 +195,7 @@ export function GitLabSettingsModal({ config, onSave, onClose }: Props) {
                     <button
                       type="button"
                       onClick={() => removeMember(index)}
-                      className="text-white/20 hover:text-white/60 transition-colors shrink-0 p-1"
+                      className="text-ink-20 hover:text-ink-60 transition-colors shrink-0 p-1"
                     >
                       <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
                         <path

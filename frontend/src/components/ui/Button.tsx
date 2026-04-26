@@ -14,9 +14,9 @@ const base =
   'rounded-lg font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed';
 
 const variantMap: Record<ButtonVariant, string> = {
-  ghost: 'bg-white/[0.07] text-white/50 hover:bg-white/[0.1] hover:text-white/70 border border-white/[0.07]',
-  solid: 'bg-white text-[#0c0c0c] hover:bg-white/90',
-  outline: 'bg-transparent text-white/70 border border-white/[0.15] hover:bg-white/[0.07]',
+  ghost: 'bg-ink-7 text-ink-50 hover:bg-ink-10 hover:text-ink-70 border border-ink-7',
+  solid: 'bg-[var(--text)] text-[var(--bg)] hover:opacity-90',
+  outline: 'bg-transparent text-ink-70 border border-ink-15 hover:bg-ink-7',
 };
 
 const sizeMap: Record<ButtonSize, string> = {

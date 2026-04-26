@@ -13,7 +13,7 @@ export function Modal({ children, onClose, panelClassName }: ModalProps) {
       onClick={onClose}
     >
       <div
-        className={panelClassName ?? 'surface w-full max-w-sm mx-8 rounded-2xl border border-white/[0.08] shadow-2xl'}
+        className={panelClassName ?? 'surface w-full max-w-sm mx-8 rounded-2xl border border-ink-8 shadow-2xl'}
         onClick={(event) => event.stopPropagation()}
       >
         {children}

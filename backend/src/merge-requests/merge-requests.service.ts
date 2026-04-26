@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import axios from 'axios';
 import { SettingsService } from '../settings/settings.service';
 import type { GitLabConfigContract } from '../contracts/domain.types';
 import type { GitLabMR, MRColumnId, MRColumns } from './merge-requests.types';
@@ -24,13 +25,16 @@ export class MergeRequestsService {
         : `${base}/api/v4/projects/${encodeURIComponent(config.resourceId)}/merge_requests`;
 
     const params = new URLSearchParams({ state: 'opened', per_page: '100' });
-    const response = await fetch(`${endpoint}?${params.toString()}`, { headers });
-
-    if (!response.ok) {
-      throw new BadRequestException(`GitLab API returned ${response.status}: ${response.statusText}`);
+    let rawMRs: GitLabMR[];
+    try {
+      const response = await axios.get<GitLabMR[]>(`${endpoint}?${params.toString()}`, { headers });
+      rawMRs = response.data;
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response) {
+        throw new BadRequestException(`GitLab API returned ${err.response.status}: ${err.response.statusText}`);
+      }
+      throw err;
     }
-
-    const rawMRs = (await response.json()) as GitLabMR[];
     const enriched = await Promise.all(
       rawMRs.map((mergeRequest) => this.enrichMergeRequest(mergeRequest, base, headers, config)),
     );
@@ -55,14 +59,11 @@ export class MergeRequestsService {
   ): Promise<GitLabMR> {
     let approved = false;
     try {
-      const approvalsResponse = await fetch(
+      const approvalsResponse = await axios.get<{ approved?: boolean }>(
         `${base}/api/v4/projects/${mergeRequest.project_id}/merge_requests/${mergeRequest.iid}/approvals`,
         { headers },
       );
-      if (approvalsResponse.ok) {
-        const approvals = (await approvalsResponse.json()) as { approved?: boolean };
-        approved = approvals.approved === true;
-      }
+      approved = approvalsResponse.data.approved === true;
     } catch {
       // Keep this MR in the board even if approvals lookup fails.
     }

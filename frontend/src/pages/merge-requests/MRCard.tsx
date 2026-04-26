@@ -22,13 +22,13 @@ function getAge(dateStr: string): { label: string; level: AgeLevel } {
 }
 
 const AGE_TEXT: Record<AgeLevel, string> = {
-  normal: 'text-white/25',
+  normal: 'text-ink-25',
   warning: 'text-amber-400/70',
   stale: 'text-red-400/70',
 };
 
 const AGE_DOT: Record<AgeLevel, string> = {
-  normal: 'bg-white/20',
+  normal: 'bg-ink-20',
   warning: 'bg-amber-400/70',
   stale: 'bg-red-400/70',
 };
@@ -55,19 +55,19 @@ export function MRCard({ mr, showRepo }: Props) {
       href={mr.web_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.05] hover:border-white/[0.09] rounded-lg px-2.5 py-1.5 transition-all duration-150 cursor-pointer"
+      className="group block bg-ink-3 hover:bg-ink-5 border border-ink-5 hover:border-ink-9 rounded-lg px-2.5 py-1.5 transition-all duration-150 cursor-pointer"
     >
       {/* Primary row — always visible */}
       <div className="flex items-center gap-2 min-w-0">
-        <span className="text-[10px] text-white/25 font-mono shrink-0 tabular-nums">
+        <span className="text-[10px] text-ink-25 font-mono shrink-0 tabular-nums">
           {mr.references?.short ?? `!${mr.iid}`}
         </span>
         {showRepo && (
-          <span className="text-[10px] text-white/15 bg-white/[0.04] px-1 rounded shrink-0 max-w-[72px] truncate">
+          <span className="text-[10px] text-ink-15 bg-ink-4 px-1 rounded shrink-0 max-w-[72px] truncate">
             {mr.projectName}
           </span>
         )}
-        <p className="flex-1 text-[12px] text-white/55 group-hover:text-white/75 truncate leading-none transition-colors">
+        <p className="flex-1 text-[12px] text-ink-55 group-hover:text-ink-75 truncate leading-none transition-colors">
           {mr.title}
         </p>
         <div className="flex items-center gap-1 shrink-0 ml-1">
@@ -82,12 +82,12 @@ export function MRCard({ mr, showRepo }: Props) {
       <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-all duration-150">
         <div className="overflow-hidden">
           <div className="flex items-center gap-1 pt-1.5 min-w-0">
-            <span className="text-white/15 text-[10px] shrink-0">by</span>
-            <span className="text-[10px] text-white/30 truncate">{authorLine}</span>
+            <span className="text-ink-15 text-[10px] shrink-0">by</span>
+            <span className="text-[10px] text-ink-30 truncate">{authorLine}</span>
             {reviewerLine && (
               <>
-                <span className="text-white/10 text-[10px] shrink-0 mx-0.5">→</span>
-                <span className="text-[10px] text-white/25 truncate">{reviewerLine}</span>
+                <span className="text-ink-10 text-[10px] shrink-0 mx-0.5">→</span>
+                <span className="text-[10px] text-ink-25 truncate">{reviewerLine}</span>
               </>
             )}
           </div>

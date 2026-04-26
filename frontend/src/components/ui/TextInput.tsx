@@ -5,7 +5,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const base =
-  'w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white placeholder-white/20 outline-none focus:border-white/15 transition-colors';
+  'w-full bg-ink-5 border border-ink-8 rounded-xl px-3 py-2 text-sm text-[var(--text)] placeholder-ink-20 outline-none focus:border-ink-15 transition-colors';
 
 export function TextInput({ className = '', ...props }: Props) {
   return <input className={`${base} ${className}`} {...props} />;

@@ -86,7 +86,7 @@ const Board = memo(function Board({ editMode, services, boardItems, setBoardItem
             {editMode && (
               <button
                 onClick={() => setShowAdd(true)}
-                className="aspect-square rounded-2xl border border-dashed border-white/[0.08] flex flex-col items-center justify-center gap-2 text-white/20 hover:text-white/40 hover:border-white/15 transition-all duration-200"
+                className="aspect-square rounded-2xl border border-dashed border-ink-8 flex flex-col items-center justify-center gap-2 text-ink-20 hover:text-ink-40 hover:border-ink-15 transition-all duration-200"
               >
                 <span className="text-lg leading-none font-light">+</span>
                 <span className="text-[10px]">Add</span>
@@ -97,9 +97,9 @@ const Board = memo(function Board({ editMode, services, boardItems, setBoardItem
 
         <DragOverlay dropAnimation={{ duration: 150, easing: 'ease' }}>
           {activeService && (
-            <div className="aspect-square w-20 rounded-2xl bg-[#1c1c1c] border border-white/10 flex flex-col items-center justify-center gap-2 shadow-2xl ring-1 ring-white/10 scale-105">
+            <div className="aspect-square w-20 rounded-2xl bg-hover border border-ink-10 flex flex-col items-center justify-center gap-2 shadow-2xl ring-1 ring-ink-10 scale-105">
               <ServiceIcon serviceName={activeService.name} iconName={activeService.iconName} size={26} shaded />
-              <span className="text-[11px] text-white/60">{activeService.name}</span>
+              <span className="text-[11px] text-ink-60">{activeService.name}</span>
             </div>
           )}
         </DragOverlay>

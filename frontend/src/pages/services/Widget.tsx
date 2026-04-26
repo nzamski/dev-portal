@@ -41,20 +41,20 @@ export function Widget({ service, editMode, onRemove }: Props) {
           'aspect-square rounded-2xl select-none',
           'flex flex-col items-center justify-center gap-2',
           'transition-all duration-200',
-          'bg-[#131313] border border-white/[0.055]',
+          'bg-widget border border-ink-6',
           isDragging ? 'opacity-30 scale-95 z-50 shadow-2xl' : '',
           editMode
-            ? 'cursor-grab active:cursor-grabbing ring-1 ring-white/[0.08]'
+            ? 'cursor-grab active:cursor-grabbing ring-1 ring-ink-8'
             : isMultiLink
-            ? 'cursor-default hover:bg-[#1c1c1c] hover:border-white/10'
-            : 'cursor-pointer hover:bg-[#1c1c1c] hover:border-white/10 active:scale-[0.96]',
+            ? 'cursor-default hover:bg-hover hover:border-ink-10'
+            : 'cursor-pointer hover:bg-hover hover:border-ink-10 active:scale-[0.96]',
         ].join(' ')}
       >
         {editMode && (
           <button
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => { e.stopPropagation(); onRemove(service.id); }}
-            className="absolute top-1.5 right-1.5 z-10 w-5 h-5 rounded-full bg-[#0c0c0c] border border-white/15 text-white/35 flex items-center justify-center hover:bg-red-900/70 hover:text-red-300 hover:border-red-700/40 transition-all"
+            className="absolute top-1.5 right-1.5 z-10 w-5 h-5 rounded-full bg-[var(--bg)] border border-ink-15 text-ink-35 flex items-center justify-center hover:bg-red-900/70 hover:text-red-300 hover:border-red-700/40 transition-all"
           >
             <svg width="7" height="7" viewBox="0 0 10 10" fill="none">
               <path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
@@ -71,7 +71,7 @@ export function Widget({ service, editMode, onRemove }: Props) {
 
         <span className={[
           'text-[12px] font-medium leading-none text-center px-2 transition-colors duration-200 w-full truncate',
-          hovered && !editMode ? 'text-white/80' : 'text-white/35',
+          hovered && !editMode ? 'text-ink-80' : 'text-ink-35',
         ].join(' ')}>
           {service.name}
         </span>
@@ -79,7 +79,7 @@ export function Widget({ service, editMode, onRemove }: Props) {
         {isMultiLink && !editMode && (
           <div className="absolute bottom-2 flex gap-[3px]">
             {service.links!.slice(0, 4).map((_, i) => (
-              <span key={i} className="w-[3px] h-[3px] rounded-full bg-white/20" />
+              <span key={i} className="w-[3px] h-[3px] rounded-full bg-ink-20" />
             ))}
           </div>
         )}
@@ -94,7 +94,7 @@ export function Widget({ service, editMode, onRemove }: Props) {
           ].join(' ')}
           style={{ top: '100%', minWidth: '9rem' }}
         >
-          <div className="bg-[#1c1c1c] rounded-xl border border-white/[0.08] shadow-2xl overflow-hidden">
+          <div className="bg-hover rounded-xl border border-ink-8 shadow-2xl overflow-hidden">
             {service.links!.map((link, i) => (
               <a
                 key={i}
@@ -104,13 +104,13 @@ export function Widget({ service, editMode, onRemove }: Props) {
                 onClick={(e) => e.stopPropagation()}
                 className={[
                   'flex items-center justify-between gap-3 px-3 py-2.5',
-                  'text-xs text-white/50 hover:text-white/85 hover:bg-white/[0.05]',
+                  'text-xs text-ink-50 hover:text-ink-85 hover:bg-ink-5',
                   'transition-colors',
-                  i > 0 ? 'border-t border-white/[0.04]' : '',
+                  i > 0 ? 'border-t border-ink-4' : '',
                 ].join(' ')}
               >
                 <span className="truncate">{link.label}</span>
-                <span className="text-white/20 shrink-0">↗</span>
+                <span className="text-ink-20 shrink-0">↗</span>
               </a>
             ))}
           </div>

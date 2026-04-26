@@ -3,7 +3,7 @@ import type { ComponentType } from 'react';
 import type { SimpleIcon } from 'simple-icons';
 import { lookupIcon, isMdIcon, resolveIconColor } from '@/lib/icons';
 
-const SHADED_COLOR = 'rgba(255,255,255,0.35)';
+const SHADED_COLOR = 'rgb(var(--ink) / 0.35)';
 
 interface Props {
   serviceName?: string;
