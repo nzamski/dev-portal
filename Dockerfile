@@ -22,5 +22,7 @@ COPY --from=backend-build /build/dist         ./dist
 COPY --from=backend-build /build/node_modules ./node_modules
 COPY --from=backend-build /build/package.json  ./
 COPY --from=frontend-build /build/dist        ./public
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh && chmod 777 ./public
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+ENTRYPOINT ["./entrypoint.sh"]
