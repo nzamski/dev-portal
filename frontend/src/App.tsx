@@ -124,7 +124,7 @@ export default function App() {
                 'h-7 px-3 rounded-lg text-[13px] font-medium transition-all duration-150',
                 onServicesPage
                   ? 'text-ink-80 bg-ink-7'
-                  : 'text-ink-30 hover:text-ink-55 hover:bg-ink-4',
+                  : 'text-ink-30 hover:text-ink-55 hover-bg-ink-8',
               ].join(' ')}
             >
               Services
@@ -135,7 +135,7 @@ export default function App() {
                 'h-7 px-3 rounded-lg text-[13px] font-medium transition-all duration-150',
                 onMRPage
                   ? 'text-ink-80 bg-ink-7'
-                  : 'text-ink-30 hover:text-ink-55 hover:bg-ink-4',
+                  : 'text-ink-30 hover:text-ink-55 hover-bg-ink-8',
               ].join(' ')}
             >
               Merge Requests
@@ -256,7 +256,7 @@ export default function App() {
       )}
 
       {/* ── Footer ──────────────────────────────────────────── */}
-      <footer className="max-w-7xl mx-auto px-8 py-6 mt-8 border-t border-ink-5">
+      <footer className="max-w-7xl mx-auto px-8 py-6 mt-2 border-t border-ink-5">
         <p className="text-ink-20 text-[11px] text-center">
           &copy; {new Date().getFullYear()} Noam Zamski. All rights reserved.
         </p>

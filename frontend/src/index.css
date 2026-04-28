@@ -88,6 +88,10 @@ body {
   .bg-ink-12 { background-color: rgb(var(--ink) / 0.12); }
   .bg-ink-20 { background-color: rgb(var(--ink) / 0.20); }
 
+  /* Explicit hover variants for ink bg (Tailwind v4 doesn't auto-generate these) */
+  .hover-bg-ink-8:hover  { background-color: rgb(var(--ink) / 0.08); }
+  .hover-bg-ink-20:hover { background-color: rgb(var(--ink) / 0.20); }
+
   /* Border — ink opacity scale */
   .border-ink-3  { border-color: rgb(var(--ink) / 0.03); }
   .border-ink-4  { border-color: rgb(var(--ink) / 0.04); }

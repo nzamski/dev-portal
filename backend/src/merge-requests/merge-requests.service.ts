@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import axios from 'axios';
+import * as https from 'https';
 import { SettingsService } from '../settings/settings.service';
 import type { GitLabConfigContract } from '../contracts/domain.types';
 import type { GitLabMR, MRColumnId, MRColumns } from './merge-requests.types';
@@ -25,9 +26,10 @@ export class MergeRequestsService {
         : `${base}/api/v4/projects/${encodeURIComponent(config.resourceId)}/merge_requests`;
 
     const params = new URLSearchParams({ state: 'opened', per_page: '100' });
+    const httpsAgent = this.buildHttpsAgent();
     let rawMRs: GitLabMR[];
     try {
-      const response = await axios.get<GitLabMR[]>(`${endpoint}?${params.toString()}`, { headers });
+      const response = await axios.get<GitLabMR[]>(`${endpoint}?${params.toString()}`, { headers, httpsAgent });
       rawMRs = response.data;
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
@@ -57,11 +59,12 @@ export class MergeRequestsService {
     headers: Record<string, string>,
     config: GitLabConfigContract,
   ): Promise<GitLabMR> {
+    const httpsAgent = this.buildHttpsAgent();
     let approved = false;
     try {
       const approvalsResponse = await axios.get<{ approved?: boolean }>(
         `${base}/api/v4/projects/${mergeRequest.project_id}/merge_requests/${mergeRequest.iid}/approvals`,
-        { headers },
+        { headers, httpsAgent },
       );
       approved = approvalsResponse.data.approved === true;
     } catch {
@@ -84,6 +87,13 @@ export class MergeRequestsService {
       projectName: this.extractProjectName(mergeRequest.web_url, config.instanceUrl),
       approved,
     };
+  }
+
+  private buildHttpsAgent(): https.Agent | undefined {
+    if (process.env.GITLAB_SSL_VERIFY === 'false') {
+      return new https.Agent({ rejectUnauthorized: false });
+    }
+    return undefined;
   }
 
   private isConfigured(config: GitLabConfigContract): boolean {

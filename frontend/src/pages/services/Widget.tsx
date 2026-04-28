@@ -104,7 +104,7 @@ export function Widget({ service, editMode, onRemove }: Props) {
                 onClick={(e) => e.stopPropagation()}
                 className={[
                   'flex items-center justify-between gap-3 px-3 py-2.5',
-                  'text-xs text-ink-50 hover:text-ink-85 hover:bg-ink-5',
+                  'text-xs text-ink-50 hover:text-ink-85 hover-bg-ink-8 cursor-pointer',
                   'transition-colors',
                   i > 0 ? 'border-t border-ink-4' : '',
                 ].join(' ')}

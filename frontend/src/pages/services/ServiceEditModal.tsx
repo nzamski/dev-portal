@@ -79,7 +79,7 @@ export function ServiceEditModal({ service, onSave, onClose }: ModalProps) {
   return (
     <Modal
       onClose={onClose}
-      panelClassName="surface w-full max-w-sm mx-8 rounded-2xl border border-ink-8 shadow-2xl max-h-[90vh] overflow-y-auto"
+      panelClassName="surface w-full max-w-lg mx-8 rounded-2xl border border-ink-8 shadow-2xl max-h-[90vh] overflow-y-auto"
     >
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <h2 className="text-ink-50 text-xs font-semibold">{service ? 'Edit service' : 'Add service'}</h2>
